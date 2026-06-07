@@ -1,0 +1,22 @@
+[
+  {"rank": 1, "name": "Tyran Stokes", "position": "SF", "college": "Notre Dame Prep / HS", "age": 18, "overall": 76, "potential": 91},
+  {"rank": 2, "name": "Arafan Diane", "position": "C", "college": "International (Mali)", "age": 18, "overall": 73, "potential": 89},
+  {"rank": 3, "name": "Mikel Brown Jr.", "position": "PG", "college": "Louisville (proj. soph)", "age": 19, "overall": 73, "potential": 88},
+  {"rank": 4, "name": "JJ Mandaquit", "position": "PG", "college": "Washington", "age": 19, "overall": 72, "potential": 87},
+  {"rank": 5, "name": "Cameron Williams", "position": "SF", "college": "Arizona", "age": 18, "overall": 71, "potential": 87},
+  {"rank": 6, "name": "Jasper Johnson", "position": "SG", "college": "Kentucky", "age": 19, "overall": 71, "potential": 86},
+  {"rank": 7, "name": "Caleb Holt", "position": "SG", "college": "Alabama", "age": 18, "overall": 70, "potential": 86},
+  {"rank": 8, "name": "Brandon McCoy Jr.", "position": "PG", "college": "San Diego State", "age": 19, "overall": 70, "potential": 85},
+  {"rank": 9, "name": "Kohl Rosario", "position": "SG", "college": "North Carolina", "age": 18, "overall": 69, "potential": 84},
+  {"rank": 10, "name": "Bryson Tiller", "position": "PG", "college": "Auburn", "age": 19, "overall": 69, "potential": 84},
+  {"rank": 11, "name": "Nikolas Khamenia", "position": "SF", "college": "Duke", "age": 19, "overall": 68, "potential": 84},
+  {"rank": 12, "name": "Tounde Yessoufou", "position": "SF", "college": "Baylor", "age": 18, "overall": 68, "potential": 84},
+  {"rank": 13, "name": "Cornelius Ingram Jr.", "position": "SF", "college": "Florida", "age": 19, "overall": 68, "potential": 83},
+  {"rank": 14, "name": "Maxime Raynaud Jr.", "position": "C", "college": "Stanford", "age": 19, "overall": 68, "potential": 82},
+  {"rank": 15, "name": "Donnie Freeman", "position": "PF", "college": "Syracuse", "age": 19, "overall": 67, "potential": 82},
+  {"rank": 16, "name": "Jaden Toombs", "position": "PF", "college": "Texas Tech", "age": 19, "overall": 67, "potential": 81},
+  {"rank": 17, "name": "Alex Lloyd", "position": "PG", "college": "Notre Dame", "age": 19, "overall": 66, "potential": 81},
+  {"rank": 18, "name": "Acaden Lewis", "position": "PG", "college": "Villanova", "age": 19, "overall": 66, "potential": 80},
+  {"rank": 19, "name": "Niko Bundalo", "position": "C", "college": "Stanford", "age": 19, "overall": 66, "potential": 80},
+  {"rank": 20, "name": "Sienna Anderson", "position": "PG", "college": "Kansas", "age": 19, "overall": 65, "potential": 80}
+]

@@ -1,0 +1,33 @@
+{
+  "season": "2026-27",
+  "source": "NBA via Bobby Marks / Yahoo Sports / Blazer's Edge, confirmed 2026-06-07",
+  "salary_cap": 165000000,
+  "minimum_team_salary": 149000000,
+  "luxury_tax_threshold": 201000000,
+  "first_apron": 209000000,
+  "second_apron": 222000000,
+  "cap_growth_yoy_pct": 7.0,
+  "notes": "Growth came in at 7%, $1M lower than original 10% projection, due to regional sports network revenue dip. CBA-allowed max growth is 10%/yr.",
+  "exception_amounts": {
+    "non_taxpayer_mle_estimate": 14100000,
+    "taxpayer_mle_estimate": 5700000,
+    "room_mle_estimate": 8700000,
+    "bi_annual_exception_estimate": 5125000,
+    "minimum_salary_2yr_veteran_estimate": 2500000
+  },
+  "max_contract_percentages": {
+    "0_6_years_service": 0.25,
+    "7_9_years_service": 0.30,
+    "10_plus_years_service": 0.35
+  },
+  "max_salary_estimates_2026_27": {
+    "rookie_scale_25pct": 41250000,
+    "veteran_30pct": 49500000,
+    "supermax_35pct": 57750000
+  },
+  "projected_future_caps": {
+    "2027_28": {"cap_est": 176550000, "growth_pct": 7.0, "confidence": "medium"},
+    "2028_29": {"cap_est": 188908500, "growth_pct": 7.0, "confidence": "low"},
+    "2029_30": {"cap_est": 202132095, "growth_pct": 7.0, "confidence": "low"}
+  }
+}

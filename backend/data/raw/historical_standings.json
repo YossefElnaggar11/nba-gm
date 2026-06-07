@@ -1,0 +1,912 @@
+{
+  "2020-21": [
+    {
+      "team": "Philadelphia 76ers",
+      "wins": 49,
+      "losses": 23,
+      "conf": "East"
+    },
+    {
+      "team": "Brooklyn Nets",
+      "wins": 48,
+      "losses": 24,
+      "conf": "East"
+    },
+    {
+      "team": "Milwaukee Bucks",
+      "wins": 46,
+      "losses": 26,
+      "conf": "East"
+    },
+    {
+      "team": "New York Knicks",
+      "wins": 41,
+      "losses": 31,
+      "conf": "East"
+    },
+    {
+      "team": "Atlanta Hawks",
+      "wins": 41,
+      "losses": 31,
+      "conf": "East"
+    },
+    {
+      "team": "Miami Heat",
+      "wins": 40,
+      "losses": 32,
+      "conf": "East"
+    },
+    {
+      "team": "Boston Celtics",
+      "wins": 36,
+      "losses": 36,
+      "conf": "East"
+    },
+    {
+      "team": "Washington Wizards",
+      "wins": 34,
+      "losses": 38,
+      "conf": "East"
+    },
+    {
+      "team": "Indiana Pacers",
+      "wins": 34,
+      "losses": 38,
+      "conf": "East"
+    },
+    {
+      "team": "Charlotte Hornets",
+      "wins": 33,
+      "losses": 39,
+      "conf": "East"
+    },
+    {
+      "team": "Chicago Bulls",
+      "wins": 31,
+      "losses": 41,
+      "conf": "East"
+    },
+    {
+      "team": "Toronto Raptors",
+      "wins": 27,
+      "losses": 45,
+      "conf": "East"
+    },
+    {
+      "team": "Cleveland Cavaliers",
+      "wins": 22,
+      "losses": 50,
+      "conf": "East"
+    },
+    {
+      "team": "Orlando Magic",
+      "wins": 21,
+      "losses": 51,
+      "conf": "East"
+    },
+    {
+      "team": "Detroit Pistons",
+      "wins": 20,
+      "losses": 52,
+      "conf": "East"
+    },
+    {
+      "team": "Utah Jazz",
+      "wins": 52,
+      "losses": 20,
+      "conf": "West"
+    },
+    {
+      "team": "Phoenix Suns",
+      "wins": 51,
+      "losses": 21,
+      "conf": "West"
+    },
+    {
+      "team": "Denver Nuggets",
+      "wins": 47,
+      "losses": 25,
+      "conf": "West"
+    },
+    {
+      "team": "Los Angeles Clippers",
+      "wins": 47,
+      "losses": 25,
+      "conf": "West"
+    },
+    {
+      "team": "Dallas Mavericks",
+      "wins": 42,
+      "losses": 30,
+      "conf": "West"
+    },
+    {
+      "team": "Portland Trail Blazers",
+      "wins": 42,
+      "losses": 30,
+      "conf": "West"
+    },
+    {
+      "team": "Los Angeles Lakers",
+      "wins": 42,
+      "losses": 30,
+      "conf": "West"
+    },
+    {
+      "team": "Golden State Warriors",
+      "wins": 39,
+      "losses": 33,
+      "conf": "West"
+    },
+    {
+      "team": "Memphis Grizzlies",
+      "wins": 38,
+      "losses": 34,
+      "conf": "West"
+    },
+    {
+      "team": "San Antonio Spurs",
+      "wins": 33,
+      "losses": 39,
+      "conf": "West"
+    },
+    {
+      "team": "New Orleans Pelicans",
+      "wins": 31,
+      "losses": 41,
+      "conf": "West"
+    },
+    {
+      "team": "Sacramento Kings",
+      "wins": 31,
+      "losses": 41,
+      "conf": "West"
+    },
+    {
+      "team": "Minnesota Timberwolves",
+      "wins": 23,
+      "losses": 49,
+      "conf": "West"
+    },
+    {
+      "team": "Oklahoma City Thunder",
+      "wins": 22,
+      "losses": 50,
+      "conf": "West"
+    },
+    {
+      "team": "Houston Rockets",
+      "wins": 17,
+      "losses": 55,
+      "conf": "West"
+    }
+  ],
+  "2021-22": [
+    {
+      "team": "Miami Heat",
+      "wins": 53,
+      "losses": 29,
+      "conf": "East"
+    },
+    {
+      "team": "Boston Celtics",
+      "wins": 51,
+      "losses": 31,
+      "conf": "East"
+    },
+    {
+      "team": "Milwaukee Bucks",
+      "wins": 51,
+      "losses": 31,
+      "conf": "East"
+    },
+    {
+      "team": "Philadelphia 76ers",
+      "wins": 51,
+      "losses": 31,
+      "conf": "East"
+    },
+    {
+      "team": "Toronto Raptors",
+      "wins": 48,
+      "losses": 34,
+      "conf": "East"
+    },
+    {
+      "team": "Chicago Bulls",
+      "wins": 46,
+      "losses": 36,
+      "conf": "East"
+    },
+    {
+      "team": "Brooklyn Nets",
+      "wins": 44,
+      "losses": 38,
+      "conf": "East"
+    },
+    {
+      "team": "Cleveland Cavaliers",
+      "wins": 44,
+      "losses": 38,
+      "conf": "East"
+    },
+    {
+      "team": "Atlanta Hawks",
+      "wins": 43,
+      "losses": 39,
+      "conf": "East"
+    },
+    {
+      "team": "Charlotte Hornets",
+      "wins": 43,
+      "losses": 39,
+      "conf": "East"
+    },
+    {
+      "team": "New York Knicks",
+      "wins": 37,
+      "losses": 45,
+      "conf": "East"
+    },
+    {
+      "team": "Washington Wizards",
+      "wins": 35,
+      "losses": 47,
+      "conf": "East"
+    },
+    {
+      "team": "Indiana Pacers",
+      "wins": 25,
+      "losses": 57,
+      "conf": "East"
+    },
+    {
+      "team": "Detroit Pistons",
+      "wins": 23,
+      "losses": 59,
+      "conf": "East"
+    },
+    {
+      "team": "Orlando Magic",
+      "wins": 22,
+      "losses": 60,
+      "conf": "East"
+    },
+    {
+      "team": "Phoenix Suns",
+      "wins": 64,
+      "losses": 18,
+      "conf": "West"
+    },
+    {
+      "team": "Memphis Grizzlies",
+      "wins": 56,
+      "losses": 26,
+      "conf": "West"
+    },
+    {
+      "team": "Golden State Warriors",
+      "wins": 53,
+      "losses": 29,
+      "conf": "West"
+    },
+    {
+      "team": "Dallas Mavericks",
+      "wins": 52,
+      "losses": 30,
+      "conf": "West"
+    },
+    {
+      "team": "Utah Jazz",
+      "wins": 49,
+      "losses": 33,
+      "conf": "West"
+    },
+    {
+      "team": "Denver Nuggets",
+      "wins": 48,
+      "losses": 34,
+      "conf": "West"
+    },
+    {
+      "team": "Minnesota Timberwolves",
+      "wins": 46,
+      "losses": 36,
+      "conf": "West"
+    },
+    {
+      "team": "Los Angeles Clippers",
+      "wins": 42,
+      "losses": 40,
+      "conf": "West"
+    },
+    {
+      "team": "New Orleans Pelicans",
+      "wins": 36,
+      "losses": 46,
+      "conf": "West"
+    },
+    {
+      "team": "San Antonio Spurs",
+      "wins": 34,
+      "losses": 48,
+      "conf": "West"
+    },
+    {
+      "team": "Los Angeles Lakers",
+      "wins": 33,
+      "losses": 49,
+      "conf": "West"
+    },
+    {
+      "team": "Sacramento Kings",
+      "wins": 30,
+      "losses": 52,
+      "conf": "West"
+    },
+    {
+      "team": "Portland Trail Blazers",
+      "wins": 27,
+      "losses": 55,
+      "conf": "West"
+    },
+    {
+      "team": "Oklahoma City Thunder",
+      "wins": 24,
+      "losses": 58,
+      "conf": "West"
+    },
+    {
+      "team": "Houston Rockets",
+      "wins": 20,
+      "losses": 62,
+      "conf": "West"
+    }
+  ],
+  "2022-23": [
+    {
+      "team": "Milwaukee Bucks",
+      "wins": 58,
+      "losses": 24,
+      "conf": "East"
+    },
+    {
+      "team": "Boston Celtics",
+      "wins": 57,
+      "losses": 25,
+      "conf": "East"
+    },
+    {
+      "team": "Philadelphia 76ers",
+      "wins": 54,
+      "losses": 28,
+      "conf": "East"
+    },
+    {
+      "team": "Cleveland Cavaliers",
+      "wins": 51,
+      "losses": 31,
+      "conf": "East"
+    },
+    {
+      "team": "New York Knicks",
+      "wins": 47,
+      "losses": 35,
+      "conf": "East"
+    },
+    {
+      "team": "Brooklyn Nets",
+      "wins": 45,
+      "losses": 37,
+      "conf": "East"
+    },
+    {
+      "team": "Miami Heat",
+      "wins": 44,
+      "losses": 38,
+      "conf": "East"
+    },
+    {
+      "team": "Atlanta Hawks",
+      "wins": 41,
+      "losses": 41,
+      "conf": "East"
+    },
+    {
+      "team": "Toronto Raptors",
+      "wins": 41,
+      "losses": 41,
+      "conf": "East"
+    },
+    {
+      "team": "Chicago Bulls",
+      "wins": 40,
+      "losses": 42,
+      "conf": "East"
+    },
+    {
+      "team": "Indiana Pacers",
+      "wins": 35,
+      "losses": 47,
+      "conf": "East"
+    },
+    {
+      "team": "Washington Wizards",
+      "wins": 35,
+      "losses": 47,
+      "conf": "East"
+    },
+    {
+      "team": "Orlando Magic",
+      "wins": 34,
+      "losses": 48,
+      "conf": "East"
+    },
+    {
+      "team": "Charlotte Hornets",
+      "wins": 27,
+      "losses": 55,
+      "conf": "East"
+    },
+    {
+      "team": "Detroit Pistons",
+      "wins": 17,
+      "losses": 65,
+      "conf": "East"
+    },
+    {
+      "team": "Denver Nuggets",
+      "wins": 53,
+      "losses": 29,
+      "conf": "West"
+    },
+    {
+      "team": "Memphis Grizzlies",
+      "wins": 51,
+      "losses": 31,
+      "conf": "West"
+    },
+    {
+      "team": "Sacramento Kings",
+      "wins": 48,
+      "losses": 34,
+      "conf": "West"
+    },
+    {
+      "team": "Phoenix Suns",
+      "wins": 45,
+      "losses": 37,
+      "conf": "West"
+    },
+    {
+      "team": "Los Angeles Clippers",
+      "wins": 44,
+      "losses": 38,
+      "conf": "West"
+    },
+    {
+      "team": "Golden State Warriors",
+      "wins": 44,
+      "losses": 38,
+      "conf": "West"
+    },
+    {
+      "team": "Los Angeles Lakers",
+      "wins": 43,
+      "losses": 39,
+      "conf": "West"
+    },
+    {
+      "team": "Minnesota Timberwolves",
+      "wins": 42,
+      "losses": 40,
+      "conf": "West"
+    },
+    {
+      "team": "New Orleans Pelicans",
+      "wins": 42,
+      "losses": 40,
+      "conf": "West"
+    },
+    {
+      "team": "Oklahoma City Thunder",
+      "wins": 40,
+      "losses": 42,
+      "conf": "West"
+    },
+    {
+      "team": "Dallas Mavericks",
+      "wins": 38,
+      "losses": 44,
+      "conf": "West"
+    },
+    {
+      "team": "Utah Jazz",
+      "wins": 37,
+      "losses": 45,
+      "conf": "West"
+    },
+    {
+      "team": "Portland Trail Blazers",
+      "wins": 33,
+      "losses": 49,
+      "conf": "West"
+    },
+    {
+      "team": "Houston Rockets",
+      "wins": 22,
+      "losses": 60,
+      "conf": "West"
+    },
+    {
+      "team": "San Antonio Spurs",
+      "wins": 22,
+      "losses": 60,
+      "conf": "West"
+    }
+  ],
+  "2023-24": [
+    {
+      "team": "Boston Celtics",
+      "wins": 64,
+      "losses": 18,
+      "conf": "East"
+    },
+    {
+      "team": "New York Knicks",
+      "wins": 50,
+      "losses": 32,
+      "conf": "East"
+    },
+    {
+      "team": "Milwaukee Bucks",
+      "wins": 49,
+      "losses": 33,
+      "conf": "East"
+    },
+    {
+      "team": "Cleveland Cavaliers",
+      "wins": 48,
+      "losses": 34,
+      "conf": "East"
+    },
+    {
+      "team": "Orlando Magic",
+      "wins": 47,
+      "losses": 35,
+      "conf": "East"
+    },
+    {
+      "team": "Indiana Pacers",
+      "wins": 47,
+      "losses": 35,
+      "conf": "East"
+    },
+    {
+      "team": "Philadelphia 76ers",
+      "wins": 47,
+      "losses": 35,
+      "conf": "East"
+    },
+    {
+      "team": "Miami Heat",
+      "wins": 46,
+      "losses": 36,
+      "conf": "East"
+    },
+    {
+      "team": "Chicago Bulls",
+      "wins": 39,
+      "losses": 43,
+      "conf": "East"
+    },
+    {
+      "team": "Atlanta Hawks",
+      "wins": 36,
+      "losses": 46,
+      "conf": "East"
+    },
+    {
+      "team": "Brooklyn Nets",
+      "wins": 32,
+      "losses": 50,
+      "conf": "East"
+    },
+    {
+      "team": "Toronto Raptors",
+      "wins": 25,
+      "losses": 57,
+      "conf": "East"
+    },
+    {
+      "team": "Charlotte Hornets",
+      "wins": 21,
+      "losses": 61,
+      "conf": "East"
+    },
+    {
+      "team": "Washington Wizards",
+      "wins": 15,
+      "losses": 67,
+      "conf": "East"
+    },
+    {
+      "team": "Detroit Pistons",
+      "wins": 14,
+      "losses": 68,
+      "conf": "East"
+    },
+    {
+      "team": "Oklahoma City Thunder",
+      "wins": 57,
+      "losses": 25,
+      "conf": "West"
+    },
+    {
+      "team": "Denver Nuggets",
+      "wins": 57,
+      "losses": 25,
+      "conf": "West"
+    },
+    {
+      "team": "Minnesota Timberwolves",
+      "wins": 56,
+      "losses": 26,
+      "conf": "West"
+    },
+    {
+      "team": "Los Angeles Clippers",
+      "wins": 51,
+      "losses": 31,
+      "conf": "West"
+    },
+    {
+      "team": "Dallas Mavericks",
+      "wins": 50,
+      "losses": 32,
+      "conf": "West"
+    },
+    {
+      "team": "Phoenix Suns",
+      "wins": 49,
+      "losses": 33,
+      "conf": "West"
+    },
+    {
+      "team": "New Orleans Pelicans",
+      "wins": 49,
+      "losses": 33,
+      "conf": "West"
+    },
+    {
+      "team": "Los Angeles Lakers",
+      "wins": 47,
+      "losses": 35,
+      "conf": "West"
+    },
+    {
+      "team": "Sacramento Kings",
+      "wins": 46,
+      "losses": 36,
+      "conf": "West"
+    },
+    {
+      "team": "Golden State Warriors",
+      "wins": 46,
+      "losses": 36,
+      "conf": "West"
+    },
+    {
+      "team": "Houston Rockets",
+      "wins": 41,
+      "losses": 41,
+      "conf": "West"
+    },
+    {
+      "team": "Utah Jazz",
+      "wins": 31,
+      "losses": 51,
+      "conf": "West"
+    },
+    {
+      "team": "Memphis Grizzlies",
+      "wins": 27,
+      "losses": 55,
+      "conf": "West"
+    },
+    {
+      "team": "San Antonio Spurs",
+      "wins": 22,
+      "losses": 60,
+      "conf": "West"
+    },
+    {
+      "team": "Portland Trail Blazers",
+      "wins": 21,
+      "losses": 61,
+      "conf": "West"
+    }
+  ],
+  "2024-25": [
+    {
+      "team": "Cleveland Cavaliers",
+      "wins": 64,
+      "losses": 18,
+      "conf": "East"
+    },
+    {
+      "team": "Boston Celtics",
+      "wins": 61,
+      "losses": 21,
+      "conf": "East"
+    },
+    {
+      "team": "New York Knicks",
+      "wins": 51,
+      "losses": 31,
+      "conf": "East"
+    },
+    {
+      "team": "Indiana Pacers",
+      "wins": 50,
+      "losses": 32,
+      "conf": "East"
+    },
+    {
+      "team": "Milwaukee Bucks",
+      "wins": 48,
+      "losses": 34,
+      "conf": "East"
+    },
+    {
+      "team": "Detroit Pistons",
+      "wins": 44,
+      "losses": 38,
+      "conf": "East"
+    },
+    {
+      "team": "Orlando Magic",
+      "wins": 41,
+      "losses": 41,
+      "conf": "East"
+    },
+    {
+      "team": "Atlanta Hawks",
+      "wins": 40,
+      "losses": 42,
+      "conf": "East"
+    },
+    {
+      "team": "Chicago Bulls",
+      "wins": 39,
+      "losses": 43,
+      "conf": "East"
+    },
+    {
+      "team": "Miami Heat",
+      "wins": 37,
+      "losses": 45,
+      "conf": "East"
+    },
+    {
+      "team": "Toronto Raptors",
+      "wins": 30,
+      "losses": 52,
+      "conf": "East"
+    },
+    {
+      "team": "Brooklyn Nets",
+      "wins": 26,
+      "losses": 56,
+      "conf": "East"
+    },
+    {
+      "team": "Philadelphia 76ers",
+      "wins": 24,
+      "losses": 58,
+      "conf": "East"
+    },
+    {
+      "team": "Charlotte Hornets",
+      "wins": 19,
+      "losses": 63,
+      "conf": "East"
+    },
+    {
+      "team": "Washington Wizards",
+      "wins": 18,
+      "losses": 64,
+      "conf": "East"
+    },
+    {
+      "team": "Oklahoma City Thunder",
+      "wins": 68,
+      "losses": 14,
+      "conf": "West"
+    },
+    {
+      "team": "Houston Rockets",
+      "wins": 52,
+      "losses": 30,
+      "conf": "West"
+    },
+    {
+      "team": "Los Angeles Lakers",
+      "wins": 50,
+      "losses": 32,
+      "conf": "West"
+    },
+    {
+      "team": "Denver Nuggets",
+      "wins": 50,
+      "losses": 32,
+      "conf": "West"
+    },
+    {
+      "team": "Los Angeles Clippers",
+      "wins": 50,
+      "losses": 32,
+      "conf": "West"
+    },
+    {
+      "team": "Minnesota Timberwolves",
+      "wins": 49,
+      "losses": 33,
+      "conf": "West"
+    },
+    {
+      "team": "Golden State Warriors",
+      "wins": 48,
+      "losses": 34,
+      "conf": "West"
+    },
+    {
+      "team": "Memphis Grizzlies",
+      "wins": 48,
+      "losses": 34,
+      "conf": "West"
+    },
+    {
+      "team": "Sacramento Kings",
+      "wins": 40,
+      "losses": 42,
+      "conf": "West"
+    },
+    {
+      "team": "Dallas Mavericks",
+      "wins": 39,
+      "losses": 43,
+      "conf": "West"
+    },
+    {
+      "team": "Phoenix Suns",
+      "wins": 36,
+      "losses": 46,
+      "conf": "West"
+    },
+    {
+      "team": "Portland Trail Blazers",
+      "wins": 36,
+      "losses": 46,
+      "conf": "West"
+    },
+    {
+      "team": "San Antonio Spurs",
+      "wins": 34,
+      "losses": 48,
+      "conf": "West"
+    },
+    {
+      "team": "New Orleans Pelicans",
+      "wins": 21,
+      "losses": 61,
+      "conf": "West"
+    },
+    {
+      "team": "Utah Jazz",
+      "wins": 17,
+      "losses": 65,
+      "conf": "West"
+    }
+  ]
+}

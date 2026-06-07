@@ -1,0 +1,2144 @@
+[
+  {
+    "name": "LeBron James",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Trae Young",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Zach LaVine",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "James Harden",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "C.J. McCollum",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Khris Middleton",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Kristaps Porzingis",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Isaiah Hartenstein",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Andrew Wiggins",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Tobias Harris",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Fred VanVleet",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Anfernee Simons",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Draymond Green",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "John Collins",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jonathan Kuminga",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Kentavious Caldwell-Pope",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Nikola Vucevic",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Norman Powell",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Harrison Barnes",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Collin Sexton",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jusuf Nurkic",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Zach Collins",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Bogdan Bogdanovic",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Rui Hachimura",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Luguentz Dort",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Kevin Huerter",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Mitchell Robinson",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Austin Reaves",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Kelly Olynyk",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Coby White",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Robert Williams III",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Matisse Thybulle",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Gabe Vincent",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Luke Kennard",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Maxi Kleber",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Moritz Wagner",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Brook Lopez",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Quentin Grimes",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Kelly Oubre Jr.",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Deandre Ayton",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Simone Fontecchio",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Kevon Looney",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Egor Demin",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Bennedict Mathurin",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Ayo Dosunmu",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Kenrich Williams",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Ziaire Williams",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Day'Ron Sharpe",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Dean Wade",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "D'Angelo Russell",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Al Horford",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jett Howard",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Nicolas Batum",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Guerschon Yabusele",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Bradley Beal",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Ousmane Dieng",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Marcus Smart",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Kevin Porter Jr.",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Nick Richards",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Andre Drummond",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jalen Duren",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Aaron Holiday",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Ochai Agbaji",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Mark Williams",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jose Alvarado",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Tari Eason",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Dwight Powell",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Kevin Love",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Nique Clifford",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Daniss Jenkins",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jase Richardson",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Gary Trent Jr.",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Gary Harris",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Kyle Lowry",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jordan Clarkson",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Garrett Temple",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Tim Hardaway Jr.",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Joe Ingles",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Doug McDermott",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jeff Green",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Larry Nance Jr.",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Bismack Biyombo",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "DeAndre Jordan",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Taurean Prince",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Patrick Baldwin Jr.",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jaxson Hayes",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Dominick Barlow",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Russell Westbrook",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Walker Kessler",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Gary Payton II",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Thomas Bryant",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "De'Anthony Melton",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "David Roddy",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "MarJon Beauchamp",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Bruce Brown Jr.",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Josh Okogie",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Landry Shamet",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Marvin Bagley III",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Drew Eubanks",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Julian Champagnie",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Wendell Moore Jr.",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jordan McLaughlin",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Javonte Green",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Amir Coffey",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Thanasis Antetokounmpo",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Ariel Hukporti",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Peyton Watson",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Seth Curry",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jae\u2019Sean Tate",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Anthony Gill",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Trendon Watford",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jericho Sims",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Sandro Mamukelashvili",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Pat Connaughton",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Josh Minott",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Nah'Shon Hyland",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Lindy Waters III",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jock Landale",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Precious Achiuwa",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Neemias Queta",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Xavier Tillman",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Collin Gillespie",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Blake Wesley",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Keaton Wallace",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Micah Potter",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "G.G. Jackson",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Bryce McGowens",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Leonard Miller",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jalen Pickett",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jamal Shead",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jamal Shead",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jonathan Mogbo",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Julian Phillips",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Craig Porter Jr.",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Andre Jackson Jr.",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jordan Walsh",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Trayce Jackson-Davis",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Mouhamed Gueye",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Pelle Larsson",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Karlo Matkovic",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Rayan Rupert",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Killian Hayes",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Keon Ellis",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jalen Wilson",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jamir Watkins",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jamir Watkins",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jordan Miller",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jamaree Bouyea",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Olivier-Maxence Prosper",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Olivier-Maxence Prosper",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jamal Cain",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Dalano Banton",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Dalen Terry",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Ron Harper Jr.",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jaylen Clark",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Keshad Johnson",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "J.D. Davison",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Amari Williams",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Kobe Sanders",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jordan Goodwin",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Mohamed Diawara",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Nick Smith Jr.",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Tolu Smith III",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "F",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Ryan Nembhard",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Mouhamadou Gueye",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "F",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jahmir Young",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Quinten Post",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Max Shulga",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jevon Carter",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Brandon Williams",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Mike Conley",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Bez Mbeng",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Malachi Smith",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Hayden Gray",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Mason Plumlee",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Cameron Thomas",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Kyle Anderson",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Pat Spencer",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Tyus Jones",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jeremy Sochan",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Spencer Jones",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jeenathan Williams",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Trevor Keels",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Tyrese Martin",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Sean Pedulla",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Norchad Omier",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "F",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jalen Slawson",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Olivier Sarr",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Josh Oduro",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "A.J. Lawson",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "F",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Tony Bradley",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Charles Bassey",
+    "prior_team": null,
+    "fa_type": "UFA",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Christian Koloko",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "John Tonje",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Elijah Harkless",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Isaiah Stevens",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Sharife Cooper",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "TyTy Washington Jr.",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "RayJ Dennis",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Mac McClung",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "K.J. Simpson",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "PG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Trey Alexander",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Alijah Martin",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Antonio Reeves",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Kevin McCullar Jr.",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Ethan Thompson",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SG",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Brooks Barnhizer",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Isaiah Livers",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "David Jones-Garcia",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Harrison Ingram",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Alex Antetokounmpo",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Dillon Jones",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Leaky Black",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Tyler Smith",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "SF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Enrique Freeman",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Oscar Tshiebwe",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Colin Castleton",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "E.J. Liddell",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Trey Jemison",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "PF",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Vladislav Goldin",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Lachlan Olbrich",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Branden Carlson",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "C",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Hunter Dickinson",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "COA",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Moussa Cisse",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "F",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Jahmai Mashack",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "F",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Drew Timme",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "F",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Chaney Johnson",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "F",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Caleb Love",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Chucky Hepburn",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Tyson Etienne",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Koby Brea",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Curtis Jones",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Taelon Peter",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Chris Manon",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Isaiah Crawford",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Daeqwon Plowden",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Yuki Kawamura",
+    "prior_team": null,
+    "fa_type": "RFA",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  },
+  {
+    "name": "Alex Morales",
+    "prior_team": null,
+    "fa_type": "TWO_WAY",
+    "position": "G",
+    "age": null,
+    "prior_salary": null,
+    "years_of_service": null
+  }
+]
