@@ -32,7 +32,7 @@ def list_free_agents(fa_type: str | None = None, db: Session = Depends(get_db)):
     from app.cba.constants import min_salary
     out = []
     for p in fas:
-        mv = expected_market_value(p.overall, p.age)
+        mv = expected_market_value(p.overall, p.age, "2026-27", p.position)
         floor_min = min_salary(p.years_of_service or 0, "2026-27")
         out.append({
             "id": p.id,

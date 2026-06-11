@@ -18,19 +18,24 @@ function usePhases() {
   const { mode } = useUserContext();
   const [draftYear, setDraftYear] = useState(2026);
   const [currentSeason, setCurrentSeason] = useState("2026-27");
+  const [simmedSeasons, setSimmedSeasons] = useState<string[]>([]);
+  const [scopeDone, setScopeDone] = useState(false);
   useEffect(() => {
     api.state().then(s => {
       setDraftYear(s.current_draft_year);
       setCurrentSeason(s.current_season);
+      setSimmedSeasons(s.simmed_seasons);
+      setScopeDone(s.scope_done);
     }).catch(() => {});
   }, []);
+  // Sequential order per user spec: Draft -> Options -> Free Agency -> Sim
   const phases = [
-    { id: "options", label: "Options", href: "/options" },
-    { id: "fa", label: "Free Agency", href: "/free-agents" },
-    { id: "draft", label: "Draft", href: `/draft/${draftYear}/live` },
+    { id: "draft", label: "1. Draft", href: `/draft/${draftYear}/live` },
+    { id: "options", label: "2. Options", href: "/options" },
+    { id: "fa", label: "3. Free Agency & Trades", href: "/free-agents" },
   ];
-  if (mode === "career") phases.push({ id: "sim", label: "Sim Season", href: "/sim" });
-  return { phases, draftYear, currentSeason };
+  if (mode === "career") phases.push({ id: "sim", label: "4. Sim Season", href: "/sim" });
+  return { phases, draftYear, currentSeason, simmedSeasons, scopeDone };
 }
 
 export function PhaseNav() {
@@ -55,7 +60,7 @@ export function PhaseNav() {
                   : "text-zinc-500 hover:bg-zinc-800"
                 }`}
               >
-                {i + 1}. {p.label}
+                {p.label}
               </Link>
               {i < phases.length - 1 && <span className="text-zinc-700">→</span>}
             </span>

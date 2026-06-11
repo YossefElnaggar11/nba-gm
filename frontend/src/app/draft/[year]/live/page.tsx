@@ -5,6 +5,7 @@ import Link from "next/link";
 import { api, type NextPick, type Prospect } from "@/lib/api";
 import { useUserContext } from "@/lib/user-context";
 import { PhaseNav, NextPhaseButton } from "@/app/phase-nav";
+import { BackButton } from "@/app/back-button";
 
 export default function LiveDraftPage({ params }: { params: Promise<{ year: string }> }) {
   const { year } = use(params);
@@ -82,6 +83,7 @@ export default function LiveDraftPage({ params }: { params: Promise<{ year: stri
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
+      <BackButton />
       <PhaseNav />
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -90,7 +92,12 @@ export default function LiveDraftPage({ params }: { params: Promise<{ year: stri
             You GM <span className="text-orange-400 font-mono font-bold">{userTeam}</span> · AI auto-picks for the other 29
           </p>
         </div>
-        <NextPhaseButton from="draft" />
+        <div className="flex items-center gap-2">
+          <Link href="/trade" className="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-sm">
+            🔄 Draft-Day Trade
+          </Link>
+          <NextPhaseButton from="draft" />
+        </div>
       </div>
 
       {draftOver ? (

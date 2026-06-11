@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { BackButton } from "@/app/back-button";
 
 type AllNbaPick = { name: string; team: string; position?: string };
 
@@ -17,7 +18,19 @@ type Award = {
   dpoy_team: string | null;
   roy: string | null;
   roy_team: string | null;
-  all_nba?: { first?: AllNbaPick[]; second?: AllNbaPick[]; third?: AllNbaPick[] };
+  all_nba?: {
+    first?: AllNbaPick[];
+    second?: AllNbaPick[];
+    third?: AllNbaPick[];
+    all_defensive_first?: AllNbaPick[];
+    all_defensive_second?: AllNbaPick[];
+    all_rookie_first?: AllNbaPick[];
+    all_rookie_second?: AllNbaPick[];
+    six_man?: string | null;
+    six_man_team?: string | null;
+    mip?: string | null;
+    mip_team?: string | null;
+  };
 };
 
 export default function AwardsHistoryPage() {
@@ -29,6 +42,7 @@ export default function AwardsHistoryPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8">
+      <BackButton />
       <h1 className="text-3xl font-bold tracking-tight mb-2">Awards History</h1>
       <p className="text-zinc-400 mb-6">Champions, Finals MVPs, regular-season MVPs, DPOYs, ROYs across simulated seasons.</p>
 
@@ -54,11 +68,29 @@ export default function AwardsHistoryPage() {
                 <Award label="DPOY" name={a.dpoy} team={a.dpoy_team} />
                 <Award label="ROY" name={a.roy} team={a.roy_team} />
               </div>
+              {(a.all_nba?.six_man || a.all_nba?.mip) && (
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <Award label="6th Man" name={a.all_nba?.six_man ?? null} team={a.all_nba?.six_man_team ?? null} />
+                  <Award label="Most Improved" name={a.all_nba?.mip ?? null} team={a.all_nba?.mip_team ?? null} />
+                </div>
+              )}
               {a.all_nba?.first && a.all_nba.first.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-zinc-800">
                   <AllNbaTeamCard label="All-NBA 1st" picks={a.all_nba.first} accent="orange" />
                   <AllNbaTeamCard label="All-NBA 2nd" picks={a.all_nba.second || []} />
                   <AllNbaTeamCard label="All-NBA 3rd" picks={a.all_nba.third || []} />
+                </div>
+              )}
+              {a.all_nba?.all_defensive_first && a.all_nba.all_defensive_first.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 mt-3 border-t border-zinc-800">
+                  <AllNbaTeamCard label="All-Defensive 1st" picks={a.all_nba.all_defensive_first} accent="orange" />
+                  <AllNbaTeamCard label="All-Defensive 2nd" picks={a.all_nba.all_defensive_second || []} />
+                </div>
+              )}
+              {a.all_nba?.all_rookie_first && a.all_nba.all_rookie_first.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 mt-3 border-t border-zinc-800">
+                  <AllNbaTeamCard label="All-Rookie 1st" picks={a.all_nba.all_rookie_first} accent="orange" />
+                  <AllNbaTeamCard label="All-Rookie 2nd" picks={a.all_nba.all_rookie_second || []} />
                 </div>
               )}
             </div>

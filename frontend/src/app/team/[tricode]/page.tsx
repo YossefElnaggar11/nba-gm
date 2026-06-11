@@ -4,6 +4,10 @@ import { RenounceHoldButton } from "./renounce-button";
 import { TeamDashboard } from "./team-dashboard";
 import { SeasonStats } from "./season-stats";
 import { TeamSeasonSummary } from "./team-season-summary";
+import { OwnFreeAgents } from "./own-fas";
+import { LastSeasonStats } from "./last-season-stats";
+import { RolloverBanner } from "./rollover-banner";
+import { BackButton } from "@/app/back-button";
 
 export const dynamic = "force-dynamic";
 
@@ -18,17 +22,21 @@ export default async function TeamPage({ params }: { params: Promise<{ tricode: 
   ]);
 
   const apronStatus = cap.over_second_apron
-    ? { text: "Above 2nd Apron — hard-capped, severe restrictions", color: "text-red-400" }
+    ? { tier: "SECOND APRON", text: "Hard-capped at 2nd apron · No aggregation · No taxpayer MLE · No BAE · Pick 7 yrs out frozen", color: "red", border: "border-red-500", bg: "bg-red-900/20" }
     : cap.over_first_apron
-    ? { text: "Above 1st Apron — apron restrictions in effect", color: "text-orange-400" }
+    ? { tier: "FIRST APRON", text: "Apron restrictions in effect · Hard-capped if using non-tax MLE / BAE / S&T-receive", color: "orange", border: "border-orange-500", bg: "bg-orange-900/20" }
     : cap.over_tax
-    ? { text: "Over Luxury Tax", color: "text-yellow-400" }
+    ? { tier: "OVER LUXURY TAX", text: "Paying tax penalties · Can still use taxpayer MLE", color: "yellow", border: "border-yellow-500", bg: "bg-yellow-900/20" }
     : cap.cap_space < 0
-    ? { text: "Over the cap (no cap room)", color: "text-zinc-400" }
-    : { text: `${fmt$(cap.cap_space)} in cap space`, color: "text-emerald-400" };
+    ? { tier: "OVER CAP", text: "Above the salary cap but under tax · Full non-tax MLE available", color: "zinc", border: "border-zinc-700", bg: "bg-zinc-800/40" }
+    : { tier: "UNDER CAP", text: `${fmt$(cap.cap_space)} of cap space available`, color: "emerald", border: "border-emerald-500", bg: "bg-emerald-900/20" };
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
+      <BackButton />
+
+      <RolloverBanner tricode={code} />
+
       <div
         className="rounded-xl p-6 mb-6 flex items-center justify-between"
         style={{ background: `linear-gradient(90deg, ${team.primary_color}, ${team.secondary_color})` }}
@@ -56,6 +64,8 @@ export default async function TeamPage({ params }: { params: Promise<{ tricode: 
 
       <TeamSeasonSummary tricode={code} />
 
+      <OwnFreeAgents tricode={code} />
+
       <SeasonStats tricode={code} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -71,14 +81,30 @@ export default async function TeamPage({ params }: { params: Promise<{ tricode: 
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 text-sm">
-            <Stat label="Total Salary" value={fmt$(cap.total_salary)} />
-            <Stat label="Cap" value={fmt$(cap.cap_levels.salary_cap)} />
-            <Stat label="Luxury Tax" value={fmt$(cap.cap_levels.luxury_tax)} highlight={cap.over_tax} />
-            <Stat label="1st Apron" value={fmt$(cap.cap_levels.first_apron)} highlight={cap.over_first_apron} />
+          {/* Apron Status Banner — clearly shows which tier the team is in */}
+          <div className={`rounded-lg border-2 ${apronStatus.border} ${apronStatus.bg} p-3 mb-4`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className={`text-xs uppercase tracking-wider font-bold text-${apronStatus.color}-400`}>
+                  {apronStatus.tier}
+                </div>
+                <div className="text-sm text-zinc-300 mt-0.5">{apronStatus.text}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-zinc-500">Payroll</div>
+                <div className="font-mono font-bold text-lg">{fmt$(cap.total_salary)}</div>
+              </div>
+            </div>
           </div>
 
-          <div className={`mb-4 text-sm font-medium ${apronStatus.color}`}>{apronStatus.text}</div>
+          {/* All 5 cap tiers shown side-by-side with payroll progression */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-5 text-xs">
+            <CapTier label="Cap" value={cap.cap_levels.salary_cap} payroll={cap.total_salary} />
+            <CapTier label="Luxury Tax" value={cap.cap_levels.luxury_tax} payroll={cap.total_salary} crossed={cap.over_tax} accent="yellow" />
+            <CapTier label="1st Apron" value={cap.cap_levels.first_apron} payroll={cap.total_salary} crossed={cap.over_first_apron} accent="orange" />
+            <CapTier label="2nd Apron" value={cap.cap_levels.second_apron} payroll={cap.total_salary} crossed={cap.over_second_apron} accent="red" />
+            <CapTier label="Cap Space" value={cap.cap_space} payroll={0} accent="emerald" isSpace />
+          </div>
 
           <table className="w-full text-sm">
             <thead className="text-xs uppercase tracking-wider text-zinc-500 border-b border-zinc-800">
@@ -160,7 +186,7 @@ export default async function TeamPage({ params }: { params: Promise<{ tricode: 
         </div>
 
         {/* Pick arsenal */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 lg:row-start-1 lg:col-start-3">
           <h2 className="text-lg font-semibold mb-4">Draft Arsenal</h2>
           <div className="space-y-3 text-sm">
             {Array.from(new Set(arsenal.picks.map((p) => p.year)))
@@ -196,15 +222,40 @@ export default async function TeamPage({ params }: { params: Promise<{ tricode: 
           </div>
         </div>
       </div>
+
+      <LastSeasonStats tricode={code} />
     </div>
   );
 }
 
-function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function CapTier({ label, value, payroll, crossed, accent, isSpace }: {
+  label: string;
+  value: number;
+  payroll: number;
+  crossed?: boolean;
+  accent?: string;
+  isSpace?: boolean;
+}) {
+  const colorMap: Record<string, string> = {
+    yellow: "border-yellow-500/60 text-yellow-300",
+    orange: "border-orange-500/70 text-orange-300",
+    red: "border-red-500/70 text-red-300",
+    emerald: "border-emerald-500/60 text-emerald-300",
+  };
+  const baseStyle = crossed && accent
+    ? `${colorMap[accent]} bg-${accent}-900/10 ring-1 ring-${accent}-500/40`
+    : "border-zinc-800 bg-zinc-950 text-zinc-400";
   return (
-    <div className={`rounded-md p-3 border ${highlight ? "border-orange-500/50 bg-orange-500/5" : "border-zinc-800 bg-zinc-950"}`}>
-      <div className="text-xs uppercase tracking-wider text-zinc-500">{label}</div>
-      <div className="font-semibold mt-1">{value}</div>
+    <div className={`rounded-md p-2.5 border ${baseStyle}`}>
+      <div className="text-[10px] uppercase tracking-wider text-zinc-500">{label}</div>
+      <div className={`font-semibold mt-0.5 font-mono ${crossed ? "" : ""}`}>
+        {value < 0 ? `-${fmt$(Math.abs(value))}` : fmt$(value)}
+      </div>
+      {!isSpace && (
+        <div className="text-[10px] text-zinc-600 mt-0.5">
+          {crossed ? "OVER" : `${fmt$(Math.max(0, value - payroll))} below`}
+        </div>
+      )}
     </div>
   );
 }

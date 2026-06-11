@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, fmt$, type PendingOption } from "@/lib/api";
 import { useUserContext } from "@/lib/user-context";
+import { getAiVetoDisabled } from "@/lib/ai-veto";
 
 type ResignFlow = {
   playerId: number;
@@ -225,10 +226,8 @@ function DecisionList({
 
 function ResignModal({ flow, onClose, onDone }: { flow: NonNullable<ResignFlow>; onClose: () => void; onDone: () => void }) {
   const { mode } = useUserContext();
-  // Default offer = max(vet-min for their YoS, market value). Ensures the offer is at
-  // least legal under the min-salary floor. Round to nearest $100k for readability.
-  const initialDefault = Math.max(flow.minSalaryForYos, flow.marketValue);
-  const [salaryM, setSalaryM] = useState<number>(Math.round(initialDefault / 100_000) / 10);
+  // Default to MIN legal salary — user negotiates up
+  const [salaryM, setSalaryM] = useState<number>(Math.round(flow.minSalaryForYos / 100_000) / 10);
   const [years, setYears] = useState(3);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -245,7 +244,7 @@ function ResignModal({ flow, onClose, onDone }: { flow: NonNullable<ResignFlow>;
         years,
         using: "BIRD",
         apply: true,
-        career_mode: mode === "career",
+        career_mode: mode === "career" && !getAiVetoDisabled(),
       });
       if (r.applied) {
         onDone();

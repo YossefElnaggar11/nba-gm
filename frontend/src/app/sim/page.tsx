@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { api, type SimResponse } from "@/lib/api";
+import { api, ApiError, type SimResponse } from "@/lib/api";
 import { PhaseNav } from "@/app/phase-nav";
 import { useUserContext } from "@/lib/user-context";
+import { RosterPreview } from "@/app/team/[tricode]/roster-preview";
+import { BackButton } from "@/app/back-button";
 
 const EXIT_LABEL: Record<string, string> = {
   R1: "Lost R1",
@@ -14,17 +16,34 @@ const EXIT_LABEL: Record<string, string> = {
   CHAMPION: "🏆 CHAMPION",
 };
 
+type DraftStatus = { done: boolean; pending: number };
+
 export default function SimPage() {
   const { team: userTeamCtx, mode } = useUserContext();
   const [season, setSeason] = useState("2026-27");
+  const [draftYear, setDraftYear] = useState(2026);
   const [userTeam, setUserTeam] = useState("LAL");
   const [result, setResult] = useState<SimResponse | null>(null);
   const [busy, setBusy] = useState(false);
+  const [simError, setSimError] = useState<string | null>(null);
+  const [draftStatus, setDraftStatus] = useState<DraftStatus | null>(null);
+
+  // Re-read game state + draft progress
+  const refreshStatus = async () => {
+    try {
+      const s = await api.state();
+      setSeason(s.current_season);
+      setDraftYear(s.current_draft_year);
+      // Check if this season's draft is complete
+      const nextPick = await api.nextPick(s.current_draft_year);
+      const undrafted = nextPick.done ? 0 : await countUndrafted(s.current_draft_year);
+      setDraftStatus({ done: undrafted === 0, pending: undrafted });
+    } catch {}
+  };
 
   useEffect(() => {
     if (userTeamCtx) setUserTeam(userTeamCtx);
-    // Default season to current state's season
-    api.state().then(s => setSeason(s.current_season)).catch(() => {});
+    refreshStatus();
   }, [userTeamCtx]);
 
   if (mode === "offseason") {
@@ -43,9 +62,44 @@ export default function SimPage() {
 
   const sim = async () => {
     setBusy(true);
+    setSimError(null);
     try {
       const r = await api.simSeason(season);
       setResult(r);
+    } catch (e: unknown) {
+      if (e instanceof ApiError) {
+        const d = e.detail as { message?: string; blocked_by?: string; undrafted_count?: number } | undefined;
+        const msg = d?.message ?? e.message;
+        setSimError(msg);
+      } else {
+        setSimError(e instanceof Error ? e.message : String(e));
+      }
+      // Refresh status so the gating UI updates
+      refreshStatus();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const startOver = async () => {
+    if (!confirm("Start over from the 2026 offseason? All progress will be wiped and you'll go back to your team's starting roster.")) return;
+    setBusy(true);
+    try {
+      await api.reset();
+      setResult(null);
+      setSeason("2026-27");
+      window.location.href = "/";
+    } finally { setBusy(false); }
+  };
+
+  const resimulate = async () => {
+    setBusy(true);
+    setSimError(null);
+    try {
+      const r = await api.simSeason(season);
+      setResult(r);
+    } catch (e) {
+      setSimError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }
@@ -54,15 +108,12 @@ export default function SimPage() {
   const rollover = async () => {
     if (!result) return;
     const nextSeason = season === "2026-27" ? "2027-28" : "2028-29";
-    if (!confirm(`Advance from ${season} to ${nextSeason}? Contracts ending this year release players to free agency, players age +1, young players develop, vets decline. You'll then run the 2027-28 offseason (options, FA, draft).`)) return;
     setBusy(true);
     try {
       const r = await api.rollover(season, nextSeason);
-      alert(`Rolled over to ${nextSeason}!\n${r.contracts_dropped} contracts expired, ${r.new_free_agents} new FAs.\nNow process options and free agents for ${nextSeason}.`);
-      setSeason(nextSeason);
-      setResult(null);
-      // Navigate user back to options/team page so they cycle through the next offseason
-      window.location.href = "/options";
+      // Land on the user's team page — the natural "season start" landing
+      const tricode = userTeam || "OKC";
+      window.location.href = `/team/${tricode}?rollover=${nextSeason}&dropped=${r.contracts_dropped}&new_fas=${r.new_free_agents}`;
     } finally {
       setBusy(false);
     }
@@ -72,14 +123,17 @@ export default function SimPage() {
   const west = result?.standings.filter(s => s.conference === "West") ?? [];
   const userRecord = result?.standings.find(s => s.tricode === userTeam);
 
+  const canSim = draftStatus?.done === true;
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
+      <BackButton />
       <PhaseNav />
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Season Simulation</h1>
           <p className="text-zinc-400 mt-1">
-            Regular season (82 games per team) + 16-team playoff bracket. Re-runs replace prior results.
+            Sim {season}: regular season + 16-team playoffs + awards. Re-runs replace prior results.
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm">
@@ -87,15 +141,49 @@ export default function SimPage() {
             <option value="2026-27">2026-27</option>
             <option value="2027-28">2027-28</option>
           </select>
-          <button onClick={sim} disabled={busy} className="px-4 py-2 rounded bg-orange-500 hover:bg-orange-400 text-black font-semibold disabled:opacity-50">
+          <button
+            onClick={sim}
+            disabled={busy || !canSim}
+            title={!canSim ? `Complete the ${draftYear} draft first` : ""}
+            className="px-4 py-2 rounded bg-orange-500 hover:bg-orange-400 text-black font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             {busy ? "Simulating…" : "Sim Season"}
           </button>
         </div>
       </div>
 
-      {!result && (
-        <div className="text-center text-zinc-500 py-16 border border-dashed border-zinc-800 rounded-xl">
-          Hit &quot;Sim Season&quot; to play out {season}.
+      {/* Pre-sim gate: draft must be done */}
+      {!canSim && draftStatus && (
+        <div className="mb-6 p-5 rounded-xl border-2 border-orange-500/60 bg-orange-900/10">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-semibold text-orange-300 text-lg">⛔ {draftYear} Draft not complete</div>
+              <div className="text-sm text-zinc-300 mt-1">
+                You need to make all draft picks before you can sim the season ({draftStatus.pending} picks remaining).
+              </div>
+            </div>
+            <Link href={`/draft/${draftYear}/live`} className="px-4 py-2 rounded bg-orange-500 hover:bg-orange-400 text-black font-bold">
+              → Go to Live Draft
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Roster preview — shown before sim runs so user sees final roster */}
+      {!result && canSim && userTeam && (
+        <RosterPreview tricode={userTeam} season={season} />
+      )}
+
+      {simError && (
+        <div className="mb-4 p-4 rounded-lg border border-red-700 bg-red-900/20">
+          <div className="font-semibold text-red-300 mb-1">Can&apos;t run sim</div>
+          <div className="text-sm text-red-200">{simError}</div>
+        </div>
+      )}
+
+      {!result && !simError && canSim && (
+        <div className="text-center text-zinc-500 py-8 border border-dashed border-zinc-800 rounded-xl">
+          When you&apos;re ready, hit &quot;Sim Season&quot; to play out {season}.
         </div>
       )}
 
@@ -120,38 +208,41 @@ export default function SimPage() {
             </div>
           </div>
 
-          {/* Advance to next offseason CTA (only if not last simmed season in scope) */}
-          {season !== "2028-29" && (
+          {season === "2026-27" && (
             <div className="bg-emerald-900/20 border border-emerald-700 rounded-xl p-5 mb-4 flex items-center justify-between">
               <div>
-                <div className="font-semibold text-emerald-300">{season} complete.</div>
+                <div className="font-semibold text-emerald-300">2026-27 season complete.</div>
                 <div className="text-sm text-zinc-400 mt-1">
-                  Process the next offseason: option decisions, FA signings, the {parseInt(season.split("-")[0]) + 1} draft (lottery already set above).
+                  Process the 2027-28 offseason. Sequence: <span className="text-orange-300">1. Draft</span> →{" "}
+                  <span className="text-orange-300">2. Options</span> →{" "}
+                  <span className="text-orange-300">3. Free Agency &amp; Trades</span> →{" "}
+                  <span className="text-orange-300">4. Sim 2027-28</span>.
                 </div>
               </div>
               <button onClick={rollover} disabled={busy} className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-semibold disabled:opacity-50">
-                → Start {parseInt(season.split("-")[0]) + 1}-{(parseInt(season.split("-")[0]) + 2).toString().slice(2)} Offseason
+                → Start 2027-28 Offseason
               </button>
             </div>
           )}
 
-          {/* Awards strip */}
+          {season === "2027-28" && (
+            <div className="bg-orange-900/20 border-2 border-orange-500 rounded-xl p-5 mb-4 flex items-center justify-between">
+              <div>
+                <div className="font-bold text-orange-300 text-lg">🏆 Game Complete!</div>
+                <div className="text-sm text-zinc-400 mt-1">
+                  You&apos;ve completed both the 2026-27 and 2027-28 seasons. Check the Awards page for the full history.
+                </div>
+              </div>
+              <button onClick={startOver} disabled={busy} className="px-4 py-2 rounded bg-orange-500 hover:bg-orange-400 text-black font-bold disabled:opacity-50">
+                ↻ Start Over from 2026 Offseason
+              </button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">MVP</div>
-              <div className="text-lg font-bold mt-1">{result.mvp ?? "—"}</div>
-              <div className="text-xs text-zinc-500">{result.mvp_team ?? ""}</div>
-            </div>
-            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">DPOY</div>
-              <div className="text-lg font-bold mt-1">{result.dpoy ?? "—"}</div>
-              <div className="text-xs text-zinc-500">{result.dpoy_team ?? ""}</div>
-            </div>
-            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">Rookie of the Year</div>
-              <div className="text-lg font-bold mt-1">{result.roy ?? "—"}</div>
-              <div className="text-xs text-zinc-500">{result.roy_team ?? "(no rookies — run the draft first)"}</div>
-            </div>
+            <AwardCard label="MVP" name={result.mvp} team={result.mvp_team} />
+            <AwardCard label="DPOY" name={result.dpoy} team={result.dpoy_team} />
+            <AwardCard label="Rookie of the Year" name={result.roy} team={result.roy_team} fallback="(no rookies — run the draft first)" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -159,7 +250,6 @@ export default function SimPage() {
             <Conference title="Western Conference" teams={west} seeds={result.west_seeds} userTeam={userTeam} />
           </div>
 
-          {/* All-NBA teams */}
           {result.all_nba_first && result.all_nba_first.length > 0 && (
             <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5">
               <h2 className="text-lg font-semibold mb-3">All-NBA Teams</h2>
@@ -176,12 +266,32 @@ export default function SimPage() {
   );
 }
 
+function AwardCard({ label, name, team, fallback }: { label: string; name: string | null; team: string | null; fallback?: string }) {
+  return (
+    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+      <div className="text-xs uppercase tracking-wider text-zinc-500">{label}</div>
+      <div className="text-lg font-bold mt-1">{name ?? "—"}</div>
+      <div className="text-xs text-zinc-500">{team ?? fallback ?? ""}</div>
+    </div>
+  );
+}
+
+async function countUndrafted(year: number): Promise<number> {
+  // Count undrafted picks by iterating; cheap because at most 60 picks
+  try {
+    const all = await api.draftOrder(year);
+    return all.filter(p => p.pick_number && p.status === "OWNED").length;
+  } catch {
+    return 0;
+  }
+}
+
 function AllNbaTeam({ label, players, accent }: { label: string; players: { name: string; team: string; ppg: number; rpg: number; apg: number }[]; accent?: string }) {
   return (
     <div className={`bg-zinc-950 border ${accent === "orange" ? "border-orange-500/40" : "border-zinc-800"} rounded p-3`}>
       <div className="text-xs uppercase tracking-wider text-zinc-500 mb-2">{label}</div>
       <ol className="space-y-1 text-sm">
-        {players.map((p, i) => (
+        {players.map((p) => (
           <li key={p.name} className="flex items-center justify-between">
             <div>
               <span className="font-medium">{p.name}</span>{" "}
@@ -217,11 +327,11 @@ function Conference({ title, teams, seeds, userTeam }: {
           </tr>
         </thead>
         <tbody>
-          {ordered.map((t, idx) => {
+          {ordered.map((t) => {
             const seed = seeds.indexOf(t.tricode) + 1;
             const isUser = t.tricode === userTeam;
             return (
-              <tr key={t.tricode} className={`border-t border-zinc-800/50 ${isUser ? "bg-orange-900/20" : seed <= 6 ? "" : seed <= 10 ? "bg-zinc-800/30" : "opacity-60"}`}>
+              <tr key={t.tricode} className={`border-t border-zinc-800/50 ${isUser ? "bg-orange-900/20" : seed > 0 && seed <= 6 ? "" : seed > 0 && seed <= 10 ? "bg-zinc-800/30" : "opacity-60"}`}>
                 <td className="px-5 py-2 font-mono text-zinc-400">{seed > 0 ? seed : ""}</td>
                 <td className="px-5 py-2 font-semibold">
                   <a href={`/team/${t.tricode}`} className="hover:text-orange-400 hover:underline">{t.tricode}</a>

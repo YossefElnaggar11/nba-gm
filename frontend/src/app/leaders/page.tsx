@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { BackButton } from "@/app/back-button";
 
 type Leader = { name: string; team: string; value: number; gp: number };
 
@@ -27,6 +28,7 @@ export default function LeadersPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
+      <BackButton />
       <div className="flex items-start justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">League Leaders</h1>

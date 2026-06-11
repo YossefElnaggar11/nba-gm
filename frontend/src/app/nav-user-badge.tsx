@@ -2,21 +2,49 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useUserContext } from "@/lib/user-context";
+import { useAiVetoDisabled } from "@/lib/ai-veto";
+
+export function NavBar() {
+  const pathname = usePathname();
+  // Home page and setup flow are minimal — no nav bar
+  if (pathname === "/" || pathname.startsWith("/setup")) return null;
+  return (
+    <header className="border-b border-zinc-800 bg-zinc-900/60 backdrop-blur sticky top-0 z-10">
+      <nav className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-6">
+        <Link href="/" className="font-bold text-lg tracking-tight">
+          NBA GM <span className="text-orange-400">2026</span>
+        </Link>
+        <NavQuickLinks />
+        <NavUserBadge />
+      </nav>
+    </header>
+  );
+}
 
 export function NavUserBadge() {
   const { team, mode, ready } = useUserContext();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [aiDisabled, setAiDisabled] = useAiVetoDisabled();
 
   const reset = async () => {
-    if (!confirm("Reset the entire game to the 2026-27 offseason starting state? All trades, signings, draft picks, and sim results will be wiped.")) return;
     setBusy(true);
     try {
       await api.reset();
-      router.refresh();
+      // Hard reload to clear all client state on the current page
+      if (typeof window !== "undefined") window.location.reload();
+    } finally { setBusy(false); }
+  };
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      const r = await api.saveCareer();
+      if (r.ok) setSavedAt(Date.now());
     } finally { setBusy(false); }
   };
 
@@ -36,6 +64,22 @@ export function NavUserBadge() {
       <span className={`px-2 py-0.5 rounded ${mode === "career" ? "bg-orange-900/40 text-orange-300" : "bg-emerald-900/40 text-emerald-300"} font-medium uppercase tracking-wider`}>
         {mode === "career" ? "Full GM" : "Offseason"}
       </span>
+      {mode === "career" && (
+        <label className="flex items-center gap-1 cursor-pointer text-zinc-400 hover:text-zinc-200" title="When on, any CBA-legal trade/signing bypasses AI evaluation">
+          <input type="checkbox" checked={aiDisabled} onChange={e => setAiDisabled(e.target.checked)} className="accent-orange-500" />
+          <span>AI Off</span>
+        </label>
+      )}
+      {mode === "career" && (
+        <button
+          onClick={save}
+          disabled={busy}
+          title="Snapshot the current career state. Anything you do without saving is discarded next time you enter Full GM Mode."
+          className="px-2 py-0.5 rounded border border-emerald-700 text-emerald-300 hover:bg-emerald-900/30 disabled:opacity-50"
+        >
+          {savedAt && Date.now() - savedAt < 2500 ? "✓ Saved" : "💾 Save"}
+        </button>
+      )}
       <Link href={`/team/${team}`} className="text-zinc-300 hover:text-white">
         Your team: <span className="font-bold">{team}</span>
       </Link>

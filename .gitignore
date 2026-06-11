@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+backend/.venv/
+backend/venv/
+
+# Node
+node_modules/
+.next/
+frontend/.next/
+frontend/out/
+
+# DB working state (committed snapshot is .backup-resume only)
+backend/data/nbagm.db
+backend/data/nbagm.db-journal
+backend/data/nbagm_career_save.db
+backend/data/nbagm_career_save.db.*
+backend/data/*.db-wal
+backend/data/*.db-shm
+
+# Cache
+backend/data/raw/html_cache/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+*.swp

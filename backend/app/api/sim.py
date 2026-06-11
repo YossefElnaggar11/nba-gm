@@ -21,8 +21,45 @@ def get_db():
         db.close()
 
 
+SEASON_ORDER = ["2026-27", "2027-28"]
+
+
 @router.post("/season/{season}")
 def run_season(season: str, db: Session = Depends(get_db)):
+    from app.db.schema import DraftPick, PickStatus
+    # Enforce sequential simulation — can't sim 2027-28 before 2026-27 is done
+    try:
+        season_idx = SEASON_ORDER.index(season)
+    except ValueError:
+        raise HTTPException(400, f"Season {season} is not in the game scope ({SEASON_ORDER})")
+    if season_idx > 0:
+        prior = SEASON_ORDER[season_idx - 1]
+        prior_row = db.get(Season, prior)
+        if not prior_row or not prior_row.simulated:
+            raise HTTPException(409, {
+                "message": f"Cannot sim {season} — {prior} must be simulated first.",
+                "blocked_by": prior,
+            })
+
+    # Enforce: this season's draft must be done before we can sim
+    draft_year = int(season.split("-")[0])
+    undrafted = (
+        db.query(DraftPick)
+        .filter(
+            DraftPick.season_year == draft_year,
+            DraftPick.status == PickStatus.OWNED,
+            DraftPick.pick_number.isnot(None),
+            DraftPick.is_swap == False,
+        )
+        .count()
+    )
+    if undrafted > 0:
+        raise HTTPException(409, {
+            "message": f"Cannot sim {season} — {undrafted} {draft_year} draft picks still unmade. Run the draft first.",
+            "blocked_by": f"{draft_year} draft",
+            "undrafted_count": undrafted,
+        })
+
     existing = db.get(Season, season)
     if existing and existing.simulated:
         db.query(TeamRecord).filter(TeamRecord.season == season).delete()

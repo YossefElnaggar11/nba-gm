@@ -96,7 +96,7 @@ def sign_player(req: SigningIn, db: Session = Depends(get_db)) -> SigningRespons
     applied = False
 
     # Market value check (Full GM Mode only)
-    market = expected_market_value(player.overall, player.age, req.first_season)
+    market = expected_market_value(player.overall, player.age, req.first_season, player.position)
     floor = acceptance_floor(market)
     player_accepts = True
     explanation = None

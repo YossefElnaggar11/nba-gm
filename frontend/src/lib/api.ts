@@ -32,6 +32,29 @@ export type Player = {
   potential: number | null;
   years_of_service: number;
   contract: Contract | null;
+  last_season_stats?: {
+    ppg: number;
+    rpg: number;
+    apg: number;
+    spg: number;
+    bpg: number;
+    mpg: number;
+  } | null;
+};
+
+export type OwnFA = {
+  hold_id: number;
+  player_id: number;
+  name: string;
+  age: number | null;
+  position: string | null;
+  overall: number | null;
+  years_of_service: number;
+  fa_type: "UFA" | "RFA" | "PO" | "TO" | "TWO_WAY";
+  hold_amount: number;
+  market_value: number;
+  min_salary: number;
+  bird_eligible: boolean;
 };
 
 export type Roster = { team: string; players: Player[]; count: number };
@@ -145,6 +168,21 @@ export type TradeResponse = {
   };
 };
 
+export class ApiError extends Error {
+  status: number;
+  detail: unknown;
+  constructor(status: number, detail: unknown) {
+    const message = typeof detail === "object" && detail && "message" in detail
+      ? String((detail as { message: unknown }).message)
+      : typeof detail === "string"
+      ? detail
+      : `Request failed (${status})`;
+    super(message);
+    this.status = status;
+    this.detail = detail;
+  }
+}
+
 async function getJSON<T>(path: string): Promise<T> {
   const r = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
   if (!r.ok) throw new Error(`${r.status} ${r.statusText} on ${path}`);
@@ -158,7 +196,13 @@ async function postJSON<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
     cache: "no-store",
   });
-  return r.json();
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    // FastAPI wraps HTTPException body in {detail: ...}
+    const detail = (data as { detail?: unknown }).detail ?? data;
+    throw new ApiError(r.status, detail);
+  }
+  return data as T;
 }
 
 export type PendingOption = {
@@ -267,6 +311,7 @@ export const api = {
   teams: () => getJSON<Team[]>("/api/teams"),
   team: (t: string) => getJSON<Team>(`/api/teams/${t}`),
   roster: (t: string) => getJSON<Roster>(`/api/teams/${t}/roster`),
+  ownFAs: (t: string) => getJSON<{ team: string; season: string; own_fas: OwnFA[] }>(`/api/teams/${t}/own-free-agents`),
   capSheet: (t: string, season = "2026-27") => getJSON<CapSheet>(`/api/cap/team/${t}?season=${season}`),
   capLevels: () => getJSON<Record<string, { salary_cap: number; luxury_tax: number; first_apron: number; second_apron: number; projected?: boolean }>>("/api/cap/levels"),
   draftOrder: (year: number) => getJSON<DraftPick[]>(`/api/draft/${year}/order`),
@@ -277,6 +322,10 @@ export const api = {
     getJSON<PendingOption[]>(`/api/options/pending?season=${season}${team ? `&team=${team}` : ""}`),
   decideOption: (contract_season_id: number, pick_up: boolean, intent_to_resign = false) =>
     postJSON<{ ok: boolean; action: string; player: string; player_id: number; former_team: string; is_free_agent: boolean }>("/api/options/decide", { contract_season_id, pick_up, intent_to_resign }),
+  undoOption: (contract_season_id: number) =>
+    postJSON<{ ok: boolean; action?: string; player?: string; error?: string }>("/api/options/undo", { contract_season_id }),
+  recentTransactions: (limit = 10, team?: string) =>
+    getJSON<Array<{ id: number; occurred_at: string; type: string; description: string; payload: Record<string, unknown> }>>(`/api/transactions?limit=${limit}${team ? `&team=${team}` : ""}`),
   signPlayer: (s: SigningProposalIn) => postJSON<SigningResponse>("/api/signings", s),
   prospects: (year: number, availableOnly = true) =>
     getJSON<Prospect[]>(`/api/draft-picks/prospects/${year}?available_only=${availableOnly}`),
@@ -305,6 +354,10 @@ export const api = {
     postJSON<{ ok: boolean; contracts_dropped: number; new_free_agents: number; players_aged: number }>("/api/rollover", { from_season, to_season }),
   state: () => getJSON<{ current_season: string; current_draft_year: number; simmed_seasons: string[]; scope_done: boolean }>("/api/state"),
   reset: () => postJSON<{ ok: boolean; message: string }>("/api/admin/reset", {}),
+  enterMode: (mode: "career" | "offseason") =>
+    postJSON<{ ok: boolean; mode: string; message: string }>("/api/admin/enter-mode", { mode }),
+  getMode: () => getJSON<{ mode: string }>("/api/admin/mode"),
+  saveCareer: () => postJSON<{ ok: boolean; message: string }>("/api/admin/save-career", {}),
   renounceHold: (hold_id: number) =>
     postJSON<{ ok: boolean; player: string | null; amount_cleared: number }>(`/api/admin/renounce-hold/${hold_id}`, {}),
 };

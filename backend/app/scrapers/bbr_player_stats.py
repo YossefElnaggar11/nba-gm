@@ -66,11 +66,31 @@ def _extract_bbr_id(name_th) -> str:
     return csk or ""
 
 
-def compute_rating(pts: float, trb: float, ast: float, stl: float, blk: float, tov: float, mpg: float) -> tuple[int, float]:
-    composite = pts + 0.5 * trb + 0.7 * ast + 1.0 * stl + 0.8 * blk - 0.6 * tov
-    mult = min(1.0, mpg / 25.0)
-    raw = 55 + composite * 1.2 * mult
-    return max(50, min(95, int(round(raw)))), composite
+def compute_rating(pts: float, trb: float, ast: float, stl: float, blk: float, tov: float, mpg: float, position: str | None = None) -> tuple[int, float]:
+    # Position-aware composite — REDUCED bonuses so PGs/Cs don't dominate the leaderboard.
+    if position == "C":
+        composite = pts + 0.55 * trb + 0.4 * ast + 0.8 * stl + 1.0 * blk - 0.6 * tov
+    elif position == "PF":
+        composite = pts + 0.55 * trb + 0.5 * ast + 0.9 * stl + 0.8 * blk - 0.6 * tov
+    elif position == "PG":
+        composite = pts + 0.4 * trb + 0.7 * ast + 1.0 * stl + 0.5 * blk - 0.7 * tov
+    else:  # SG, SF, or unknown
+        composite = pts + 0.5 * trb + 0.65 * ast + 0.9 * stl + 0.7 * blk - 0.6 * tov
+
+    mult = min(1.0, mpg / 26.0)
+    raw = 55 + composite * 1.05 * mult
+
+    # Minutes-played floor — keep but lower so role players who played heavy
+    # minutes don't auto-rate as starters.
+    if mpg >= 33:
+        raw = max(raw, 76)   # bona fide starter
+    elif mpg >= 29:
+        raw = max(raw, 72)   # high-minute starter
+    elif mpg >= 25:
+        raw = max(raw, 68)   # rotation player
+
+    # Lower ceiling to 96 — only true generational talents top 95.
+    return max(50, min(96, int(round(raw)))), composite
 
 
 def scrape_ratings() -> list[PlayerRating]:
@@ -104,14 +124,13 @@ def scrape_ratings() -> list[PlayerRating]:
         blk = _f(row.find("td", {"data-stat": "blk_per_g"})) or 0
         tov = _f(row.find("td", {"data-stat": "tov_per_g"})) or 0
         age = _f(row.find("td", {"data-stat": "age"}))
-        ovr, composite = compute_rating(pts, trb, ast, stl, blk, tov, mpg)
+        pos = (row.find("td", {"data-stat": "pos"}).get_text(strip=True) if row.find("td", {"data-stat": "pos"}) else None)
+        if pos and "-" in pos:
+            pos = pos.split("-")[0]
+        ovr, composite = compute_rating(pts, trb, ast, stl, blk, tov, mpg, pos)
         age_int = int(age) if age else None
         potential = ovr + (max(0, 27 - age_int) * 0.6 if age_int else 0)
         potential_int = min(99, int(round(potential)))
-        pos = (row.find("td", {"data-stat": "pos"}).get_text(strip=True) if row.find("td", {"data-stat": "pos"}) else None)
-        # Take first position if multi-position string
-        if pos and "-" in pos:
-            pos = pos.split("-")[0]
         rating = PlayerRating(
             bbr_id=bbr_id, name=name, team=team_str, age=age_int,
             games=int(games), mpg=mpg, overall=ovr, potential=potential_int,

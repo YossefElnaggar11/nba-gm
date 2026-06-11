@@ -59,6 +59,7 @@ from app.api import extensions as extensions_router        # noqa: E402
 from app.api import stats as stats_router                  # noqa: E402
 from app.api import state as state_router                  # noqa: E402
 from app.api import leaders as leaders_router              # noqa: E402
+from app.api import transactions as transactions_router    # noqa: E402
 
 app.include_router(teams_router.router)
 app.include_router(draft_router.router)
@@ -75,6 +76,7 @@ app.include_router(extensions_router.router)
 app.include_router(stats_router.router)
 app.include_router(state_router.router)
 app.include_router(leaders_router.router)
+app.include_router(transactions_router.router)
 
 
 @app.get("/")

@@ -3,10 +3,13 @@
 import { useEffect, useState } from "react";
 import { api, fmt$, type FreeAgent, type Team } from "@/lib/api";
 import { useUserContext } from "@/lib/user-context";
+import { useAiVetoDisabled } from "@/lib/ai-veto";
 import { PhaseNav, NextPhaseButton } from "@/app/phase-nav";
+import { BackButton } from "@/app/back-button";
 
 export default function FreeAgentsPage() {
   const { team: userTeam, mode } = useUserContext();
+  const [aiDisabled] = useAiVetoDisabled();
   const [fas, setFas] = useState<FreeAgent[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [signing, setSigning] = useState<FreeAgent | null>(null);
@@ -32,9 +35,9 @@ export default function FreeAgentsPage() {
     setError(null);
     setInfo(null);
     setSigning(fa);
-    // Pre-fill salary to a reasonable starting offer = ~75% of market value
-    const startingOffer = Math.max(1.5, (fa.market_value * 0.75) / 1_000_000);
-    setSalaryM(Math.round(startingOffer * 10) / 10);
+    // Default to MIN legal salary — user can negotiate up from there
+    const startingOffer = fa.min_salary_for_yos / 1_000_000;
+    setSalaryM(Math.round(startingOffer * 100) / 100);
   };
 
   const ufa = fas.filter((f) => f.fa_type === "UFA");
@@ -55,7 +58,7 @@ export default function FreeAgentsPage() {
         years,
         using,
         apply,
-        career_mode: mode === "career",
+        career_mode: mode === "career" && !aiDisabled,
       });
       if (apply && r.applied) {
         setSigning(null);
@@ -76,6 +79,7 @@ export default function FreeAgentsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
+      <BackButton />
       <PhaseNav />
       <div className="flex items-start justify-between mb-2">
         <h1 className="text-3xl font-bold tracking-tight">2026 Free Agent Market</h1>

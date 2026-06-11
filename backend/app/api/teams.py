@@ -90,5 +90,54 @@ def get_roster(tricode: str, db: Session = Depends(get_db)):
             "potential": p.potential,
             "years_of_service": p.years_of_service,
             "contract": contract_payload,
+            # 2025-26 baseline stats (from BBR scrape) — used for "last season" display
+            "last_season_stats": {
+                "ppg": p.baseline_ppg or 0,
+                "rpg": p.baseline_rpg or 0,
+                "apg": p.baseline_apg or 0,
+                "spg": p.baseline_spg or 0,
+                "bpg": p.baseline_bpg or 0,
+                "mpg": p.baseline_mpg or 0,
+            } if p.baseline_mpg else None,
         })
     return {"team": tricode, "players": result, "count": len(result)}
+
+
+@router.get("/{tricode}/own-free-agents")
+def get_own_free_agents(tricode: str, db: Session = Depends(get_db)):
+    """Players the team has Bird rights to (cap hold on the team's books)."""
+    from app.cba.constants import min_salary
+    from app.cba.market_value import expected_market_value
+    from app.db.schema import CapHold
+    tricode = tricode.upper()
+    rows = (
+        db.query(CapHold, Player)
+        .join(Player, Player.id == CapHold.player_id)
+        .filter(
+            CapHold.team_tricode == tricode,
+            CapHold.season == "2026-27",
+            CapHold.renounced == False,
+            Player.is_free_agent == True,
+        )
+        .order_by(CapHold.amount.desc())
+        .all()
+    )
+    out = []
+    for hold, p in rows:
+        market = expected_market_value(p.overall, p.age, "2026-27", p.position)
+        out.append({
+            "hold_id": hold.id,
+            "player_id": p.id,
+            "name": p.name,
+            "age": p.age,
+            "position": p.position,
+            "overall": p.overall,
+            "years_of_service": p.years_of_service,
+            "fa_type": p.fa_type or "UFA",   # RFA / UFA
+            "hold_amount": hold.amount,
+            "market_value": market,
+            "min_salary": min_salary(p.years_of_service or 0, "2026-27"),
+            # Bird rights = can re-sign for up to max contract regardless of cap
+            "bird_eligible": True,
+        })
+    return {"team": tricode, "season": "2026-27", "own_fas": out}

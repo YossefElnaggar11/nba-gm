@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { api, fmt$, type Roster, type Team, type TradeResponse } from "@/lib/api";
+import { useAiVetoDisabled } from "@/lib/ai-veto";
+import { BackButton } from "@/app/back-button";
 
 type PickRow = { id: number; year: number; round: number; original: string };
 
@@ -20,6 +22,7 @@ export default function TradePage() {
   const [careerMode, setCareerMode] = useState(false);
   const [userTeam, setUserTeam] = useState("LAL");
   const [season, setSeason] = useState("2026-27");
+  const [aiDisabled, setAiDisabled] = useAiVetoDisabled();
   const [result, setResult] = useState<TradeResponse | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -141,7 +144,7 @@ export default function TradePage() {
       const r = await api.proposeTrade({
         season,
         apply,
-        career_mode: careerMode,
+        career_mode: careerMode && !aiDisabled,   // turning off AI bypasses career checks
         user_team: userTeam,
         destinations: buildDestinations(),
         legs: activeTeams.map((t) => ({
@@ -165,6 +168,7 @@ export default function TradePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
+      <BackButton />
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight mb-2">Trade Machine</h1>
@@ -332,15 +336,27 @@ function TradeSide({
       <div className="flex items-center justify-between mb-3">
         <div>
           <div className="text-xs uppercase tracking-wider text-zinc-500">{label}</div>
-          <select
-            value={team}
-            onChange={(e) => setTeam(e.target.value)}
-            className="mt-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm"
-          >
-            {teams.map((t) => (
-              <option key={t.tricode} value={t.tricode}>{t.full_name}</option>
-            ))}
-          </select>
+          <div className="mt-1 flex items-center gap-2">
+            {teams.find(t => t.tricode === team)?.logo_url && (
+              <img src={teams.find(t => t.tricode === team)?.logo_url} alt="" className="w-7 h-7 object-contain" />
+            )}
+            <select
+              value={team}
+              onChange={(e) => setTeam(e.target.value)}
+              className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm"
+            >
+              <optgroup label="Eastern Conference">
+                {teams.filter(t => t.conference === "East").map((t) => (
+                  <option key={t.tricode} value={t.tricode}>{t.full_name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Western Conference">
+                {teams.filter(t => t.conference === "West").map((t) => (
+                  <option key={t.tricode} value={t.tricode}>{t.full_name}</option>
+                ))}
+              </optgroup>
+            </select>
+          </div>
         </div>
         <div className="text-right text-sm">
           <div className="text-zinc-500 text-xs">Outgoing</div>

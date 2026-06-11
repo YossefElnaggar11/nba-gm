@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api, type Team } from "@/lib/api";
+import { BackButton } from "@/app/back-button";
 
 const MODE_LABEL: Record<string, { name: string; color: string }> = {
   offseason: { name: "2026 Offseason Mode", color: "emerald" },
@@ -13,11 +13,21 @@ const MODE_LABEL: Record<string, { name: string; color: string }> = {
 export default function TeamSetupPage() {
   const router = useRouter();
   const sp = useSearchParams();
-  const mode = sp.get("mode") || "offseason";
+  const mode = (sp.get("mode") || "offseason") as "career" | "offseason";
   const label = MODE_LABEL[mode] || MODE_LABEL.offseason;
   const [teams, setTeams] = useState<Team[]>([]);
+  const [switching, setSwitching] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { api.teams().then(setTeams); }, []);
+  useEffect(() => {
+    // First switch the backend's mode. This saves career state on the way out
+    // OR restores it on the way back in.
+    api.enterMode(mode)
+      .then(() => api.teams())
+      .then(setTeams)
+      .catch((e) => setError(String(e)))
+      .finally(() => setSwitching(false));
+  }, [mode]);
 
   const pick = (tricode: string) => {
     if (typeof window !== "undefined") {
@@ -34,16 +44,31 @@ export default function TeamSetupPage() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
       <div className="mb-8">
-        <Link href="/" className="text-xs text-zinc-500 hover:text-zinc-300">← Back to modes</Link>
+        <BackButton />
         <div className="flex items-center gap-3 mt-2">
           <span className={`text-xs px-2 py-0.5 rounded bg-${label.color}-900/40 text-${label.color}-300 font-medium uppercase tracking-wider`}>{label.name}</span>
         </div>
         <h1 className="text-3xl font-bold tracking-tight mt-2">Pick the team you&apos;ll represent</h1>
-        <p className="text-zinc-400 mt-1">This is your team for the duration of the game.</p>
+        <p className="text-zinc-400 mt-1">
+          {mode === "offseason"
+            ? "Sandbox mode — your moves don't persist between sessions, and don't affect Full GM Mode."
+            : "Career mode — your moves persist between sessions. Switching to Offseason Mode preserves this save."}
+        </p>
       </div>
 
-      <Section title="Eastern Conference" teams={east} onPick={pick} />
-      <Section title="Western Conference" teams={west} onPick={pick} />
+      {switching && (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-6 text-sm text-zinc-400">
+          {mode === "offseason" ? "Resetting sandbox to fresh state…" : "Loading your saved career state…"}
+        </div>
+      )}
+      {error && <div className="text-red-300 mb-6">{error}</div>}
+
+      {!switching && (
+        <>
+          <Section title="Eastern Conference" teams={east} onPick={pick} />
+          <Section title="Western Conference" teams={west} onPick={pick} />
+        </>
+      )}
     </div>
   );
 }
