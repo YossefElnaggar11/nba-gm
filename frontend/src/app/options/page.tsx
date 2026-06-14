@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { api, fmt$, type PendingOption } from "@/lib/api";
-import { PhaseNav, NextPhaseButton } from "@/app/phase-nav";
 import { useUserContext } from "@/lib/user-context";
+import { useNextOffseasonStep } from "@/lib/use-next-step";
 import { BackButton } from "@/app/back-button";
 
 export default function OptionsPage() {
   const { team: userTeam, ready } = useUserContext();
+  const next = useNextOffseasonStep("options");
   // Empty filter means "show only your team" by default.
   // Special "ALL" sentinel means user explicitly asked for the entire league.
   const [teamFilter, setTeamFilter] = useState<string>("");
@@ -88,15 +90,20 @@ export default function OptionsPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <BackButton />
-      <PhaseNav />
-      <div className="flex items-start justify-between mb-2">
-        <h1 className="text-3xl font-bold tracking-tight">Option Decisions</h1>
-        <NextPhaseButton from="options" />
+      <div className="flex items-start justify-between mb-2 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Option Decisions</h1>
+          <p className="text-zinc-400 mt-1">
+            Process player and team options for <span className="text-zinc-200 font-mono">{season}</span>.
+            Declining either type sends the player to free agency.
+          </p>
+        </div>
+        {userTeam && (
+          <Link href={next.href} className="shrink-0 px-4 py-2 rounded-md bg-orange-500 hover:bg-orange-400 text-black font-semibold text-sm whitespace-nowrap">
+            {next.label}
+          </Link>
+        )}
       </div>
-      <p className="text-zinc-400 mb-6">
-        Process player and team options for <span className="text-zinc-200 font-mono">{season}</span>.
-        Declining either type sends the player to free agency.
-      </p>
 
       <div className="mb-4 flex items-center gap-3 flex-wrap">
         <div className="text-sm text-zinc-300">{showingLabel}</div>

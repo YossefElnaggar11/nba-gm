@@ -18,24 +18,36 @@ from __future__ import annotations
 from app.cba.constants import EXCEPTIONS_2026_27, cap_for
 
 
-# Calibrated to 2024-25 NBA contracts — cap-relative pct by OVR tier
-# Mid-tier (75-82) bumped to match reality: starters get $15-25M, quality role $10-15M
+# Calibrated to 2024-25 NBA contracts — cap-relative pct by OVR tier.
+# Real-life reference comps:
+#   95+ supermax: Jokic $55M, Embiid $54M, SGA-tier
+#   92: KAT $50M, Brunson, Maxey
+#   90: AD $43M, Bam $40M
+#   88: Hartenstein $28M (high), Porzingis ~$30M, Tobias Harris $30M
+#   86: Anunoby $35M, Naz Reid range
+#   84: Bridges $25M, RJ Barrett $25M
+#   82: Caruso $9M (low usage), Aaron Gordon $22M, P.J. Washington $19M
+#   80: Sochan/borderline starter ~$16M
+#   78: Daniel Gafford $13M, Walker Kessler $4.9M (rookie)
+#   76: Ivica Zubac $19M (anchor), bench wings ~$8-11M
+#   72-74: role players $5-8M
+#   <70: minimums
 _OVR_TO_CAP_PCT = [
-    (95, 0.35),   # Max contracts ($55-58M)
-    (92, 0.31),   # All-NBA 1st/2nd ($48-51M)
-    (90, 0.27),   # Borderline All-NBA ($42-45M)
-    (88, 0.24),   # All-Star ($37-40M)
-    (86, 0.21),   # Solid All-Star ($32-35M)
-    (84, 0.19),   # Borderline All-Star ($30-32M, Bam tier)
-    (82, 0.17),   # Top starter ($26-28M)
-    (80, 0.15),   # Quality starter ($23-25M, Hartenstein tier)
-    (78, 0.12),   # Mid starter ($19-21M)
-    (76, 0.097),  # Borderline starter ($15-17M)
-    (74, 0.075),  # Quality role player ($12-14M)
-    (72, 0.055),  # Role player ($8-10M)
-    (70, 0.038),  # Bench rotation ($5-7M)
-    (67, 0.026),  # Deep bench ($3.5-4.5M)
-    (64, 0.017),  # 12th-15th man ($2.5-3M)
+    (95, 0.35),    # Supermax/max ($55M+)
+    (92, 0.31),    # All-NBA ($48-51M)
+    (90, 0.27),    # Borderline All-NBA ($42-44M)
+    (88, 0.22),    # Star ($33-35M, AD/KAT tier)
+    (86, 0.19),    # All-Star ($28-30M)
+    (84, 0.165),   # Borderline All-Star ($25-27M, Bam tier)
+    (82, 0.135),   # Top starter ($20-22M)
+    (80, 0.110),   # Quality starter ($16-18M)
+    (78, 0.088),   # Mid starter ($13-14M)
+    (76, 0.068),   # Borderline starter ($10-11M)
+    (74, 0.048),   # Quality role player ($7-8M)
+    (72, 0.033),   # Role player ($4.5-5.5M)
+    (70, 0.022),   # Bench rotation ($3-4M)
+    (67, 0.016),   # Deep bench ($2.2-2.8M)
+    (64, 0.012),   # 12th-15th man (~$2M)
 ]
 
 
@@ -56,39 +68,50 @@ def expected_market_value(overall: int | None, age: int | None, season: str = "2
     cap = cap_for(season).salary_cap
     base = int(_base_pct_from_ovr(overall) * cap)
 
-    # Position scarcity premium — quality bigs and primary ball-handlers go for more
-    if position == "C":
-        base = int(base * 1.18)
+    # Position scarcity premium — primary ball-handlers and elite bigs go for more.
+    # The C bonus only applies to top-tier bigs; mid/low Cs (rim runners) don't get it.
+    if position == "C" and overall >= 84:
+        base = int(base * 1.10)        # only elite Cs (Bam, Sabonis, Jokic, KAT)
     elif position == "PG":
-        base = int(base * 1.08)
-    elif position == "PF":
-        base = int(base * 1.05)
+        base = int(base * 1.06)
+    elif position == "PF" and overall >= 84:
+        base = int(base * 1.04)
 
-    # Age curve — steeper for declining vets. Players over 35 in lower OVR tiers
-    # (i.e. role-player tier) typically take minimum contracts in real NBA.
+    # Age curve. Decline is steeper for non-stars; legacy stars (OVR 88+) still
+    # command real money in their late 30s (LeBron, Steph, KD pattern).
     if age is not None:
+        ovr = overall or 0
         if age >= 38:
-            base = int(base * 0.30)
+            if ovr >= 92: factor = 0.75      # Steph/LeBron tier
+            elif ovr >= 88: factor = 0.55    # Borderline All-Star vet
+            elif ovr >= 82: factor = 0.40    # Quality vet
+            else: factor = 0.25              # Minimum vet
         elif age >= 36:
-            base = int(base * 0.45)
+            if ovr >= 92: factor = 0.88
+            elif ovr >= 88: factor = 0.72
+            elif ovr >= 82: factor = 0.55
+            else: factor = 0.42
         elif age >= 34:
-            base = int(base * 0.62)
+            if ovr >= 92: factor = 0.96
+            elif ovr >= 88: factor = 0.85
+            elif ovr >= 82: factor = 0.72
+            else: factor = 0.62
         elif age >= 32:
-            base = int(base * 0.80)
+            factor = 0.95 if ovr >= 88 else 0.85
         elif age >= 30:
-            base = int(base * 0.92)
+            factor = 0.95
         elif age <= 22:
-            base = int(base * 1.10)
+            factor = 1.10
         elif age <= 24:
-            base = int(base * 1.05)
+            factor = 1.05
+        else:
+            factor = 1.0
+        base = int(base * factor)
 
-        # Cap on aging non-stars: if age >= 35 and OVR < 84, cap at $8M
-        # (this is what reality looks like — Westbrook, DeRozan-style old vets
-        # don't get $14M deals)
-        if age >= 35 and (overall or 0) < 84:
+        # Hard caps on aging non-stars (Westbrook/DeRozan tier — never gets >$8M)
+        if age >= 35 and ovr < 82:
             base = min(base, 8_000_000)
-        # If age >= 37 and OVR < 88, even tighter cap (Lopez, Lowry tier)
-        if age >= 37 and (overall or 0) < 88:
+        if age >= 37 and ovr < 85:
             base = min(base, 5_000_000)
 
     return max(base, EXCEPTIONS_2026_27.minimum_2yr_vet)

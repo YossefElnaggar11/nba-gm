@@ -53,14 +53,9 @@ export function SeasonStats({ tricode }: { tricode: string }) {
 
   if (players === null) return null;
 
-  if (!players.length) {
-    return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-6">
-        <h2 className="text-lg font-semibold mb-2">Player Stats</h2>
-        <p className="text-sm text-zinc-500">{note || "No simulated stats yet. Run a season sim first (Full GM Mode)."}</p>
-      </div>
-    );
-  }
+  // No simulated stats yet → hide the section entirely. The team page already
+  // has the roster table + NextStepBanner directing the user to sim the season.
+  if (!players.length) return null;
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-6">

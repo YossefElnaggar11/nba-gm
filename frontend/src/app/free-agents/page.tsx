@@ -1,13 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api, fmt$, type FreeAgent, type Team } from "@/lib/api";
 import { useUserContext } from "@/lib/user-context";
 import { useAiVetoDisabled } from "@/lib/ai-veto";
-import { PhaseNav, NextPhaseButton } from "@/app/phase-nav";
+import { useNextOffseasonStep } from "@/lib/use-next-step";
 import { BackButton } from "@/app/back-button";
+import { TeamExceptionsPanel } from "@/app/team-exceptions-panel";
 
 export default function FreeAgentsPage() {
+  const router = useRouter();
   const { team: userTeam, mode } = useUserContext();
   const [aiDisabled] = useAiVetoDisabled();
   const [fas, setFas] = useState<FreeAgent[]>([]);
@@ -21,11 +25,18 @@ export default function FreeAgentsPage() {
   const [info, setInfo] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
 
+  const [currentSeason, setCurrentSeason] = useState("2026-27");
+  const next = useNextOffseasonStep("fa");
   const load = async () => {
-    const [a, b] = await Promise.all([api.freeAgents(), api.teams()]);
+    const [a, b, s] = await Promise.all([api.freeAgents(), api.teams(), api.state()]);
     setFas(a);
     setTeams(b);
+    setCurrentSeason(s.current_season);
   };
+
+  useEffect(() => {
+    document.title = `Free Agents · NBA GM 2026`;
+  }, []);
   useEffect(() => { load(); }, []);
   useEffect(() => {
     if (userTeam) setSignTeam(userTeam);
@@ -35,10 +46,31 @@ export default function FreeAgentsPage() {
     setError(null);
     setInfo(null);
     setSigning(fa);
-    // Default to MIN legal salary — user can negotiate up from there
+    // Default to MIN legal salary — user can negotiate up from there.
     const startingOffer = fa.min_salary_for_yos / 1_000_000;
     setSalaryM(Math.round(startingOffer * 100) / 100);
+    setUsing("MIN");
   };
+
+  // Auto-suggest the right exception based on the salary the user types.
+  // Keeps the user from accidentally over-paying via the "MIN" mechanism.
+  useEffect(() => {
+    if (!signing) return;
+    const salary = salaryM * 1_000_000;
+    const minSal = signing.min_salary_for_yos;
+    if (salary <= minSal * 1.02) {
+      setUsing("MIN");
+    } else if (signing.prior_team === signTeam) {
+      // Own free agent — use Bird rights so it goes over the cap legally.
+      setUsing("BIRD");
+    } else if (salary <= 14_000_000) {
+      // Mid-level deal — non-tax MLE is the typical mechanism.
+      setUsing("MLE_NON_TAX");
+    } else {
+      // Big outside signing — needs cap space.
+      setUsing("NON_BIRD");
+    }
+  }, [salaryM, signing, signTeam]);
 
   const ufa = fas.filter((f) => f.fa_type === "UFA");
   const rfa = fas.filter((f) => f.fa_type === "RFA");
@@ -53,7 +85,7 @@ export default function FreeAgentsPage() {
       const r = await api.signPlayer({
         player_id: signing.id,
         team: signTeam,
-        first_season: "2026-27",
+        first_season: currentSeason,
         salary_year1: Math.round(salaryM * 1_000_000),
         years,
         using,
@@ -63,6 +95,7 @@ export default function FreeAgentsPage() {
       if (apply && r.applied) {
         setSigning(null);
         await load();
+        router.refresh();
       } else if (!r.valid) {
         setError(r.violations.map(v => `[${v.severity}] ${v.message}`).join("\n"));
       } else if (!r.player_accepts) {
@@ -80,15 +113,20 @@ export default function FreeAgentsPage() {
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
       <BackButton />
-      <PhaseNav />
-      <div className="flex items-start justify-between mb-2">
-        <h1 className="text-3xl font-bold tracking-tight">2026 Free Agent Market</h1>
-        <NextPhaseButton from="fa" />
+      <div className="flex items-start justify-between mb-2 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{currentSeason.split("-")[0]} Free Agent Market</h1>
+          <p className="text-zinc-400 mt-1">
+            {fas.length} players hit the market. FA opens July 1, {currentSeason.split("-")[0]}.
+            {mode === "career" && <span className="ml-2 text-orange-400">· Lowball offers will be rejected.</span>}
+          </p>
+        </div>
+        <Link href={next.href} className="shrink-0 px-4 py-2 rounded-md bg-orange-500 hover:bg-orange-400 text-black font-semibold text-sm whitespace-nowrap">
+          {next.label}
+        </Link>
       </div>
-      <p className="text-zinc-400 mb-6">
-        {fas.length} players hit the market. FA opens July 1, 2026.
-        {mode === "career" && <span className="ml-2 text-orange-400">· Full GM Mode: lowball offers rejected.</span>}
-      </p>
+
+      {userTeam && <TeamExceptionsPanel tricode={userTeam} season={currentSeason} variant="full" />}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Stat label="Unrestricted" value={ufa.length} color="emerald" />

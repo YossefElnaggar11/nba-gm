@@ -7,6 +7,8 @@ import { TeamSeasonSummary } from "./team-season-summary";
 import { OwnFreeAgents } from "./own-fas";
 import { LastSeasonStats } from "./last-season-stats";
 import { RolloverBanner } from "./rollover-banner";
+import { NextStepBanner } from "./next-step-banner";
+import { ReleaseButton } from "./release-button";
 import { BackButton } from "@/app/back-button";
 
 export const dynamic = "force-dynamic";
@@ -14,10 +16,12 @@ export const dynamic = "force-dynamic";
 export default async function TeamPage({ params }: { params: Promise<{ tricode: string }> }) {
   const { tricode } = await params;
   const code = tricode.toUpperCase();
+  const state = await api.state();
+  const currentSeason = state.current_season;
   const [team, roster, cap, arsenal] = await Promise.all([
     api.team(code),
     api.roster(code),
-    api.capSheet(code),
+    api.capSheet(code, currentSeason),
     api.teamArsenal(code),
   ]);
 
@@ -37,34 +41,36 @@ export default async function TeamPage({ params }: { params: Promise<{ tricode: 
 
       <RolloverBanner tricode={code} />
 
+      <NextStepBanner tricode={code} />
+
       <div
-        className="rounded-xl p-6 mb-6 flex items-center justify-between"
+        className="rounded-xl px-5 py-4 mb-6 flex items-center justify-between"
         style={{ background: `linear-gradient(90deg, ${team.primary_color}, ${team.secondary_color})` }}
       >
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-4">
           {team.logo_url && (
-            <img src={team.logo_url} alt={team.full_name} className="w-20 h-20 object-contain drop-shadow-lg" />
+            <img src={team.logo_url} alt={team.full_name} className="w-14 h-14 object-contain drop-shadow-lg" />
           )}
           <div>
-            <div className="text-xs text-white/80 tracking-wider uppercase">
-              {team.conference} · {team.division}
+            <div className="text-[10px] text-white/80 tracking-wider uppercase">
+              {team.conference} · {team.division} · {currentSeason} Season
             </div>
-            <h1 className="text-4xl font-bold tracking-tight text-white drop-shadow">
+            <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow leading-tight">
               {team.full_name}
             </h1>
           </div>
         </div>
         <div className="text-right">
-          <div className="text-5xl font-black text-white/90 drop-shadow">{team.tricode}</div>
-          <div className="mt-1 text-xs text-white/80">2026-27 Season</div>
+          <div className="text-3xl font-black text-white/90 drop-shadow leading-none">{team.tricode}</div>
         </div>
       </div>
+
+      {/* Pending actions surface FIRST so the user can't miss them */}
+      <OwnFreeAgents tricode={code} />
 
       <TeamDashboard viewTricode={code} />
 
       <TeamSeasonSummary tricode={code} />
-
-      <OwnFreeAgents tricode={code} />
 
       <SeasonStats tricode={code} />
 
@@ -72,7 +78,15 @@ export default async function TeamPage({ params }: { params: Promise<{ tricode: 
         {/* Cap sheet */}
         <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-lg p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">2026-27 Roster &amp; Cap</h2>
+            <div>
+              <h2 className="text-lg font-semibold">{currentSeason} Roster &amp; Cap</h2>
+              <div className="text-xs text-zinc-500 mt-0.5">
+                <span className={roster.count > 15 ? "text-red-400 font-bold" : roster.count >= 15 ? "text-orange-300" : ""}>
+                  {roster.count} / 15 standard contracts
+                </span>
+                {roster.count > 15 && " · over the roster max — release players before sim"}
+              </div>
+            </div>
             <Link
               href={`/trade?team=${team.tricode}`}
               className="text-xs px-3 py-1.5 rounded-md bg-orange-500 hover:bg-orange-400 text-black font-medium"
@@ -110,32 +124,42 @@ export default async function TeamPage({ params }: { params: Promise<{ tricode: 
             <thead className="text-xs uppercase tracking-wider text-zinc-500 border-b border-zinc-800">
               <tr>
                 <th className="text-left pb-2">Player</th>
-                <th className="text-right pb-2 w-20">Age</th>
-                <th className="text-right pb-2 w-32">2026-27</th>
-                <th className="text-right pb-2 w-24">Type</th>
+                <th className="text-center pb-2 w-10">Pos</th>
+                <th className="text-right pb-2 w-12">Age</th>
+                <th className="text-right pb-2 w-32">{currentSeason}</th>
+                <th className="text-right pb-2 w-32">Type</th>
               </tr>
             </thead>
             <tbody>
               {cap.players.map((p) => (
-                <tr key={p.player_id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                  <td className="py-2">{p.name}</td>
+                <tr key={p.player_id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 group">
+                  <td className="py-2">
+                    <span className="font-medium">{p.name}</span>
+                    {p.is_two_way && <span className="ml-2 text-[10px] px-1 py-0.5 rounded bg-emerald-900/40 text-emerald-400">2-WAY</span>}
+                  </td>
+                  <td className="text-center text-zinc-400 text-xs font-mono">{p.position ?? "—"}</td>
                   <td className="text-right text-zinc-400">{p.age ?? "—"}</td>
                   <td className="text-right font-mono">{fmt$Full(p.salary)}</td>
                   <td className="text-right">
-                    {p.option_type === "PLAYER" && (
-                      <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-900/40 text-yellow-400">P-OPT</span>
-                    )}
-                    {p.option_type === "TEAM" && (
-                      <span className="text-xs px-1.5 py-0.5 rounded bg-blue-900/40 text-blue-400">T-OPT</span>
-                    )}
-                    {!p.guaranteed && (
-                      <span className="text-xs ml-1 px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400">non-gtd</span>
-                    )}
+                    <span className="inline-flex items-center gap-1">
+                      {p.option_type === "PLAYER" && (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-900/40 text-yellow-400">P-OPT</span>
+                      )}
+                      {p.option_type === "TEAM" && (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-blue-900/40 text-blue-400">T-OPT</span>
+                      )}
+                      {!p.guaranteed && (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400">non-gtd</span>
+                      )}
+                      <span className="opacity-0 group-hover:opacity-100 transition">
+                        <ReleaseButton playerId={p.player_id} playerName={p.name} />
+                      </span>
+                    </span>
                   </td>
                 </tr>
               ))}
               <tr className="font-semibold">
-                <td className="pt-3 text-right" colSpan={2}>Total ({cap.players.length} players)</td>
+                <td className="pt-3 text-right" colSpan={3}>Total ({cap.players.length} players)</td>
                 <td className="pt-3 text-right font-mono">{fmt$Full(cap.total_salary)}</td>
                 <td />
               </tr>
@@ -144,7 +168,7 @@ export default async function TeamPage({ params }: { params: Promise<{ tricode: 
 
           {roster.count > cap.players.length && (
             <div className="text-xs text-zinc-500 mt-3">
-              {roster.count - cap.players.length} additional players on roster without 2026-27 contracts
+              {roster.count - cap.players.length} additional players on roster without {currentSeason} contracts
               (option pending / two-way / unsigned).
             </div>
           )}

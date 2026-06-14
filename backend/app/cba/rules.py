@@ -23,7 +23,7 @@ from app.cba.constants import (
     TRADE_MATCH_FIRST_APRON, TRADE_MATCH_SECOND_APRON,
     cap_for, min_salary,
 )
-from app.db.schema import Contract, ContractSeason, DraftPick, OptionType, PickStatus, Player
+from app.db.schema import CapHold, Contract, ContractSeason, DraftPick, OptionType, PickStatus, Player
 
 
 # ---------------------------------------------------------------------------
@@ -286,6 +286,38 @@ def validate_trade(db: Session, proposal: TradeProposal) -> list[Violation]:
                         team=leg.team,
                     ))
 
+    # Roster size check — would any team end up with more than 15 standard contracts?
+    from app.cba.roster import STANDARD_ROSTER_MAX
+    for leg in proposal.legs:
+        outgoing_pids = set(leg.outgoing_player_ids)
+        # Incoming players for this team
+        incoming_count = 0
+        for other in proposal.legs:
+            if other.team == leg.team:
+                continue
+            for pid in other.outgoing_player_ids:
+                try:
+                    dest = proposal.destination("player", pid, other.team)
+                except ValueError:
+                    continue
+                if dest == leg.team:
+                    incoming_count += 1
+        # Current standard contracts (excluding outgoing players)
+        standard_now = (
+            db.query(Contract)
+            .filter(Contract.team_tricode == leg.team, Contract.is_active == True, Contract.is_two_way == False)
+            .all()
+        )
+        standard_count = sum(1 for c in standard_now if c.player_id not in outgoing_pids)
+        if standard_count + incoming_count > STANDARD_ROSTER_MAX:
+            violations.append(Violation(
+                "ROSTER_OVERFLOW", Severity.BLOCKER,
+                f"{leg.team} would end up with {standard_count + incoming_count} standard "
+                f"contracts after this trade (max {STANDARD_ROSTER_MAX}). "
+                f"Release someone first, or send out an additional player.",
+                team=leg.team,
+            ))
+
     # 5. Touched-player rules:
     #    - Players signed within last 3 months can't be aggregated (TODO)
     #    - Players acquired via S&T can't be re-traded for 6 months (TODO)
@@ -364,6 +396,27 @@ def validate_signing(db: Session, p: SigningProposal) -> list[Violation]:
         violations.append(Violation("NOT_A_FREE_AGENT", Severity.BLOCKER,
                                     f"{player.name} is under contract."))
 
+    # Roster size check: 15 standard + 3 two-way max
+    from app.cba.roster import STANDARD_ROSTER_MAX, TWO_WAY_MAX
+    contracts = (
+        db.query(Contract)
+        .filter(Contract.team_tricode == p.team.upper(), Contract.is_active == True)
+        .all()
+    )
+    standard_count = sum(1 for c in contracts if not c.is_two_way)
+    two_way_count = sum(1 for c in contracts if c.is_two_way)
+    # MIN signings to bench / minimum-exception go to standard unless caller asked two-way
+    if standard_count >= STANDARD_ROSTER_MAX:
+        violations.append(Violation(
+            "ROSTER_FULL", Severity.BLOCKER,
+            f"{p.team} already has {standard_count}/{STANDARD_ROSTER_MAX} standard contracts. "
+            f"Release a player on the team page before signing more.",
+            team=p.team,
+        ))
+    elif standard_count >= STANDARD_ROSTER_MAX - 1 and two_way_count >= TWO_WAY_MAX:
+        # Edge case but worth surfacing
+        pass
+
     # Max contract check
     max_sal = max_salary(player.years_of_service, p.season)
     if p.salary_year1 > max_sal:
@@ -390,14 +443,46 @@ def validate_signing(db: Session, p: SigningProposal) -> list[Violation]:
             f"{p.years}-year contract exceeds max {max_len} for signing type {p.using}.",
         ))
 
-    # Cap space / exception availability — for non-Bird signings
+    # Cap space / exception availability
     fin = compute_team_finances(db, p.team, p.season)
-    if p.using == "NON_BIRD" and not fin.is_over_cap and fin.cap_space < p.salary_year1:
-        violations.append(Violation(
-            "INSUFFICIENT_CAP_SPACE", Severity.BLOCKER,
-            f"{p.team} only has ${fin.cap_space:,} cap space for ${p.salary_year1:,} signing.",
-            team=p.team,
-        ))
+
+    # MIN exception: salary must actually be the minimum (no overpaying via "MIN")
+    if p.using == "MIN":
+        if p.salary_year1 > int(floor * 1.02):
+            violations.append(Violation(
+                "MIN_EXCEPTION_OVERPAY", Severity.BLOCKER,
+                f"MIN exception only allows signing at the minimum salary (${floor:,}). "
+                f"Pick a different mechanism (BIRD / NON_BIRD / MLE) for ${p.salary_year1:,}.",
+            ))
+
+    # BIRD / MAX_BIRD: team must actually hold this player's Bird rights (cap hold present)
+    if p.using in ("BIRD", "MAX_BIRD"):
+        hold_exists = db.query(CapHold).filter(
+            CapHold.player_id == p.player_id,
+            CapHold.team_tricode == p.team,
+            CapHold.season == p.season,
+            CapHold.renounced == False,
+        ).first()
+        # Or they were just under contract with this team this same season (rare race)
+        if not hold_exists and (player.team_tricode != p.team):
+            violations.append(Violation(
+                "NO_BIRD_RIGHTS", Severity.BLOCKER,
+                f"{p.team} does not hold Bird rights for {player.name} "
+                f"(no non-renounced cap hold for {p.season}).",
+                team=p.team,
+            ))
+
+    # NON_BIRD here is treated as "use cap space" — requires the team to actually
+    # have it. (Over-the-cap teams cannot use cap space — they must use an exception.)
+    if p.using == "NON_BIRD":
+        if fin.is_over_cap or fin.cap_space < p.salary_year1:
+            violations.append(Violation(
+                "INSUFFICIENT_CAP_SPACE", Severity.BLOCKER,
+                f"{p.team} doesn't have ${p.salary_year1:,} in cap space "
+                f"(has ${max(0, fin.cap_space):,}). Use a different mechanism "
+                f"(BIRD if your own FA, MLE if under tax, MIN otherwise).",
+                team=p.team,
+            ))
     if p.using in ("MLE_NON_TAX", "MLE_TAX", "MLE_ROOM"):
         cap_amount = {
             "MLE_NON_TAX": EXCEPTIONS_2026_27.non_taxpayer_mle,

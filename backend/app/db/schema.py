@@ -277,6 +277,24 @@ class CapHold(Base):
     notes: Mapped[str | None] = mapped_column(Text)
 
 
+class TradeException(Base):
+    """Traded Player Exception (TPE). Generated when a team trades a player but
+    takes back less salary; the difference is held as an exception that can
+    absorb a player's salary in a later trade. Expires 1 year after creation.
+    """
+    __tablename__ = "trade_exceptions"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    team_tricode: Mapped[str] = mapped_column(ForeignKey("teams.tricode"), index=True)
+    amount: Mapped[int] = mapped_column(Integer)               # initial dollars
+    remaining: Mapped[int] = mapped_column(Integer)            # remaining after partial use
+    created_date: Mapped[date] = mapped_column(Date)
+    expires_date: Mapped[date] = mapped_column(Date)
+    season_created: Mapped[str] = mapped_column(String(7), index=True)
+    source_player_name: Mapped[str | None] = mapped_column(String(96))
+    used_up: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    notes: Mapped[str | None] = mapped_column(Text)
+
+
 # ---------------------------------------------------------------------------
 # Per-player season stats (populated by the sim engine)
 # ---------------------------------------------------------------------------

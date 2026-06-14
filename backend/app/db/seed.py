@@ -61,69 +61,100 @@ def _cap_hold_amount(last_salary: int, years_of_service: int, overall: int | Non
 
 
 def seed_contracts(db: Session) -> None:
+    """Seed contracts + cap holds. The raw BBR JSON has the same player appearing
+    under multiple teams when he was traded mid-season — we deduplicate by bbr_id
+    so each player gets exactly one team (the one with a future contract, or for
+    expiring FAs the one with the lower 2025-26 salary, which is usually the
+    post-trade destination).
+    """
     path = RAW / "contracts_2026_offseason.json"
     if not path.exists():
         print(f"  ! {path} not found, skipping contracts")
         return
     print("Seeding contracts + cap holds for expiring players...")
     data: dict[str, list[dict]] = json.loads(path.read_text())
+
+    # First pass: group occurrences by bbr_id
+    by_player: dict[str, list[tuple[str, dict]]] = {}
+    for tricode, players in data.items():
+        for p in players:
+            if not p.get("seasons"):
+                continue
+            by_player.setdefault(p["bbr_id"], []).append((tricode, p))
+
     total_players = 0
     total_contracts = 0
     total_holds = 0
-    for tricode, players in data.items():
-        for p in players:
-            # Skip players with no contract data (free agents / two-way unsigned)
-            if not p["seasons"]:
-                continue
-            future_seasons = [s for s in p["seasons"] if s["season"] != "2025-26"]
-            yos = _estimate_yos(p["age"])
-            last_25_26 = next((s for s in p["seasons"] if s["season"] == "2025-26"), None)
-            is_fa = not future_seasons
-            existing = db.query(Player).filter(Player.bbr_id == p["bbr_id"]).one_or_none()
-            if not existing:
-                existing = Player(
-                    bbr_id=p["bbr_id"], name=p["name"], age=p["age"],
-                    team_tricode=tricode if future_seasons else None,
-                    is_free_agent=is_fa,
-                    fa_type="UFA" if is_fa else None,
-                    years_of_service=yos,
-                )
-                db.add(existing)
-                db.flush()
-                total_players += 1
-            else:
-                existing.team_tricode = tricode if future_seasons else None
-                existing.is_free_agent = is_fa
-                if not existing.years_of_service:
-                    existing.years_of_service = yos
-            # Cap hold: this player was on `tricode` last year, now expiring
-            if is_fa and last_25_26 and last_25_26["salary"] > 0:
-                hold = _cap_hold_amount(last_25_26["salary"], yos,
-                                        overall=existing.overall, age=existing.age,
-                                        position=existing.position)
-                db.add(CapHold(
-                    player_id=existing.id, team_tricode=tricode,
-                    season="2026-27", amount=hold, renounced=False,
-                    notes=f"Bird-rights cap hold from prior ${last_25_26['salary']:,} salary",
-                ))
-                total_holds += 1
-            if not future_seasons:
-                continue
-            contract = Contract(
-                player_id=existing.id, team_tricode=tricode,
-                signed_date=date(2024, 7, 1),  # placeholder
-                signed_using="UNKNOWN",
-                is_active=True,
+    for bbr_id, occurrences in by_player.items():
+        # Pick the canonical entry per player:
+        #   - if any occurrence has future-season money, use that team (their active deal)
+        #   - else for expiring-FA: use the team where they finished the season
+        #     (heuristic: the lower 2025-26 salary, which is usually the trade destination
+        #      since post-deadline contracts are often pro-rated or minimum)
+        active = next(
+            (occ for occ in occurrences if any(s["season"] != "2025-26" for s in occ[1]["seasons"])),
+            None,
+        )
+        if active is not None:
+            tricode, p = active
+        else:
+            # All occurrences are expiring; pick by lowest 25-26 salary
+            def _last_sal(occ):
+                last = next((s for s in occ[1]["seasons"] if s["season"] == "2025-26"), None)
+                return last["salary"] if last else 0
+            tricode, p = min(occurrences, key=_last_sal)
+
+        future_seasons = [s for s in p["seasons"] if s["season"] != "2025-26"]
+        yos = _estimate_yos(p["age"])
+        last_25_26 = next((s for s in p["seasons"] if s["season"] == "2025-26"), None)
+        is_fa = not future_seasons
+
+        existing = db.query(Player).filter(Player.bbr_id == bbr_id).one_or_none()
+        if not existing:
+            existing = Player(
+                bbr_id=bbr_id, name=p["name"], age=p["age"],
+                team_tricode=tricode if future_seasons else None,
+                is_free_agent=is_fa,
+                fa_type="UFA" if is_fa else None,
+                years_of_service=yos,
             )
-            db.add(contract)
+            db.add(existing)
             db.flush()
-            for s in future_seasons:
-                db.add(ContractSeason(
-                    contract_id=contract.id, season=s["season"], salary=s["salary"],
-                    option_type=OptionType(s["option"]),
-                    guaranteed=s["guaranteed"],
-                ))
-            total_contracts += 1
+            total_players += 1
+        else:
+            existing.team_tricode = tricode if future_seasons else None
+            existing.is_free_agent = is_fa
+            if not existing.years_of_service:
+                existing.years_of_service = yos
+
+        if is_fa and last_25_26 and last_25_26["salary"] > 0:
+            hold = _cap_hold_amount(last_25_26["salary"], yos,
+                                    overall=existing.overall, age=existing.age,
+                                    position=existing.position)
+            db.add(CapHold(
+                player_id=existing.id, team_tricode=tricode,
+                season="2026-27", amount=hold, renounced=False,
+                notes=f"Bird-rights cap hold from prior ${last_25_26['salary']:,} salary",
+            ))
+            total_holds += 1
+
+        if not future_seasons:
+            continue
+        contract = Contract(
+            player_id=existing.id, team_tricode=tricode,
+            signed_date=date(2024, 7, 1),
+            signed_using="UNKNOWN",
+            is_active=True,
+        )
+        db.add(contract)
+        db.flush()
+        for s in future_seasons:
+            db.add(ContractSeason(
+                contract_id=contract.id, season=s["season"], salary=s["salary"],
+                option_type=OptionType(s["option"]),
+                guaranteed=s["guaranteed"],
+            ))
+        total_contracts += 1
     db.commit()
     print(f"  -> {total_players} players, {total_contracts} active contracts, {total_holds} cap holds")
 
@@ -266,32 +297,50 @@ def seed_prospects(db: Session) -> None:
 def _salary_implied_ovr_floor(salary_y1: int) -> int:
     """Stars who didn't play much last year still deserve a high baseline OVR
     based on their max-contract status. Prevents Bradley-Beal-style underrating
-    when scraping injured players' limited stats."""
-    if salary_y1 >= 50_000_000: return 88
-    if salary_y1 >= 40_000_000: return 85
-    if salary_y1 >= 30_000_000: return 81
-    if salary_y1 >= 20_000_000: return 77
-    if salary_y1 >= 15_000_000: return 73
+    when scraping injured players' limited stats. Tuned conservatively so a
+    big paycheck alone doesn't mint an All-NBA player."""
+    if salary_y1 >= 58_000_000: return 90    # True supermax (Tatum, Brunson, Embiid)
+    if salary_y1 >= 50_000_000: return 88    # Big max (KAT, AD)
+    if salary_y1 >= 42_000_000: return 85    # Standard max (Bam-tier post-extension)
+    if salary_y1 >= 34_000_000: return 81    # Sub-max stars
+    if salary_y1 >= 26_000_000: return 77
+    if salary_y1 >= 19_000_000: return 73
+    if salary_y1 >= 13_000_000: return 70
     return 0
 
 
+# Known-injured-in-2025-26 stars who would otherwise show OVR=None because they
+# have no BBR per-game stats for the season. Without this, they show up as 0 OVR
+# / no position / no baseline stats, which the sim engine treats as a 60-OVR scrub.
+#
+# Each entry: (overall, potential, position, baseline_mpg, ppg, rpg, apg, spg, bpg)
+INJURED_2025_26_OVERRIDES: dict[str, tuple[int, int, str, float, float, float, float, float, float]] = {
+    "halibty01": (94, 94, "PG", 35.5, 20.3, 4.0, 11.0, 1.4, 0.5),  # Haliburton — All-NBA when healthy
+    "lillada01": (87, 87, "PG", 34.5, 24.0, 4.5, 6.5, 1.0, 0.3),   # Lillard — elite scorer, age 36
+    "irvinky01": (89, 89, "PG", 35.0, 24.5, 4.5, 5.0, 1.4, 0.5),   # Kyrie — All-Star when healthy
+}
+
+
 def _ascending_player_bump(age: int | None, mpg: float | None, ovr: int | None) -> int:
-    """Young players who broke through last season + playoffs should get an
-    OVR bump to reflect their trajectory. More inclusive than before."""
+    """Young players who broke through last season should get a modest OVR
+    bump to reflect their trajectory. Calibrated so a single strong season
+    for a 22-year-old (e.g. Keyonte George at 23 ppg) doesn't catapult them
+    into All-NBA tier — that takes multiple seasons of proven production.
+
+    Caps:
+      - Never above OVR 87 from a bump alone
+      - Bumps decrease as OVR climbs (already-good players don't need the help)
+    """
     if not age or not mpg or not ovr:
         return 0
-    # Stars are stars — don't bump them above 90
-    if ovr >= 90:
-        return 0
-    if age <= 22 and mpg >= 18 and ovr >= 65:
-        return 5   # Big riser (Ajay Mitchell, Reed Sheppard, Stephon Castle tier)
-    if age <= 23 and mpg >= 20 and ovr >= 68:
-        return 4
-    if age <= 24 and mpg >= 22 and ovr >= 72:
+    if ovr >= 87:
+        return 0   # Already All-Star tier; no extra love needed
+    # Big risers: very young + high minutes + clear breakout (not just decent)
+    if age <= 21 and mpg >= 24 and 70 <= ovr <= 80:
         return 3
-    if age <= 25 and mpg >= 26 and ovr >= 75:
+    if age <= 23 and mpg >= 24 and 72 <= ovr <= 82:
         return 2
-    if age <= 26 and mpg >= 28 and ovr >= 78:
+    if age <= 25 and mpg >= 26 and 75 <= ovr <= 84:
         return 1
     return 0
 
@@ -348,26 +397,65 @@ def seed_player_ratings(db: Session) -> None:
         for n, o, w in ascending_examples[:6]:
             print(f"     {n}: {o} -> {w}")
 
-    # Salary-implied floor for high-paid players (injured stars get min OVR for their tier)
+    # Explicit overrides for 2025-26 season-long injured stars who have no BBR data
+    # at all (otherwise they show up as OVR=None / no position / no baseline stats
+    # and the sim treats them like a 60-OVR scrub).
+    print("Applying injured-star overrides for 2025-26 (Haliburton, Lillard, Kyrie, etc.)...")
+    overridden = 0
+    for bbr_id, (ovr, pot, pos, mpg, ppg, rpg, apg, spg, bpg) in INJURED_2025_26_OVERRIDES.items():
+        p = db.query(Player).filter(Player.bbr_id == bbr_id).one_or_none()
+        if not p:
+            continue
+        if not p.overall or p.overall < ovr:
+            p.overall = ovr
+        if not p.potential or p.potential < pot:
+            p.potential = pot
+        if not p.position:
+            p.position = pos
+        if not p.baseline_mpg:
+            p.baseline_mpg = mpg
+            p.baseline_ppg = ppg
+            p.baseline_rpg = rpg
+            p.baseline_apg = apg
+            p.baseline_spg = spg
+            p.baseline_bpg = bpg
+        overridden += 1
+    db.commit()
+    print(f"  -> {overridden} injured stars overridden with healthy baselines")
+
+    # Salary-implied floor for high-paid players. This runs AFTER the override block
+    # and applies even when the player still has OVR=None (a partial signal that
+    # they're an injured star not covered by an explicit override).
     print("Applying salary-implied OVR floors...")
     boosted = 0
     raw_contracts = json.loads((RAW / "contracts_2026_offseason.json").read_text())
     salary_by_bbr: dict[str, int] = {}
     for team_tricode, players in raw_contracts.items():
         for p in players:
-            current_year = next((s for s in p["seasons"] if s["season"] in ("2025-26", "2026-27")), None)
-            if current_year and current_year["salary"] > 0:
-                salary_by_bbr[p["bbr_id"]] = current_year["salary"]
+            # Use the MAX of 2025-26 and 2026-27 salaries. For young stars on
+            # extensions (Jalen Williams: $6.5M → $41.5M next year), this picks
+            # up the extension price as the OVR signal.
+            sals = [s["salary"] for s in p["seasons"] if s["season"] in ("2025-26", "2026-27") and s["salary"] > 0]
+            if not sals:
+                continue
+            top_sal = max(sals)
+            salary_by_bbr[p["bbr_id"]] = max(salary_by_bbr.get(p["bbr_id"], 0), top_sal)
     for bbr_id, sal in salary_by_bbr.items():
         floor = _salary_implied_ovr_floor(sal)
         if floor <= 0:
             continue
         player = db.query(Player).filter(Player.bbr_id == bbr_id).one_or_none()
-        if not player or not player.overall:
+        if not player:
             continue
-        if player.overall < floor:
+        if not player.overall:
+            # No BBR stats — assign the salary-implied floor directly so this
+            # injured/unrostered star isn't treated as a 60-OVR scrub.
             player.overall = floor
-            # Bump potential too if needed
+            if not player.potential:
+                player.potential = floor
+            boosted += 1
+        elif player.overall < floor:
+            player.overall = floor
             if player.potential and player.potential < floor:
                 player.potential = floor
             boosted += 1

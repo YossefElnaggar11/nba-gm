@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api, fmt$, type OwnFA } from "@/lib/api";
 import { useUserContext } from "@/lib/user-context";
@@ -15,10 +16,11 @@ export function OwnFreeAgents({ tricode }: { tricode: string }) {
   const { team: userTeam, mode } = useUserContext();
   const router = useRouter();
   const [fas, setFAs] = useState<OwnFA[]>([]);
+  const [season, setSeason] = useState<string>("2026-27");
   const [resign, setResign] = useState<OwnFA | null>(null);
 
   const load = () => {
-    api.ownFAs(tricode).then(r => setFAs(r.own_fas));
+    api.ownFAs(tricode).then(r => { setFAs(r.own_fas); setSeason(r.season); });
   };
   useEffect(() => { load(); }, [tricode]);
 
@@ -33,18 +35,31 @@ export function OwnFreeAgents({ tricode }: { tricode: string }) {
     await api.renounceHold(hold_id);
     load();
     router.refresh();
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("nba-gm:data-changed"));
+    }
   };
 
   const isYourTeam = userTeam === tricode;
 
+  // Total cap hold dollars stuck on the books
+  const totalHolds = fas.reduce((sum, f) => sum + f.hold_amount, 0);
+
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-6">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-semibold">
+    <div id="own-fas" className="bg-zinc-900 border-2 border-orange-500/40 rounded-lg p-5 mb-6 scroll-mt-20">
+      <div className="flex items-center justify-between mb-1">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <span className="text-orange-400">⚠</span>
           Your Free Agents <span className="text-xs text-zinc-500 font-normal">({fas.length})</span>
         </h2>
-        <span className="text-xs text-zinc-500">Bird rights — you can re-sign over the cap</span>
+        <span className="text-xs text-orange-300">
+          {fmt$(totalHolds)} in cap holds — re-sign or renounce
+        </span>
       </div>
+      <p className="text-xs text-zinc-400 mb-3">
+        Each player here is a free agent <span className="text-zinc-300">you have Bird rights to</span>. You can re-sign them over the cap.
+        Anyone you don&apos;t handle counts as a cap hold against your books until you <span className="text-zinc-300">renounce</span> them.
+      </p>
 
       {ufa.length > 0 && (
         <FASection title="Unrestricted FAs (Bird Rights)" subtitle="They can sign anywhere, but you can offer more years and higher raises than other teams." fas={ufa} onResign={isYourTeam ? setResign : undefined} onRenounce={isYourTeam ? renounce : undefined} />
@@ -53,8 +68,36 @@ export function OwnFreeAgents({ tricode }: { tricode: string }) {
         <FASection title="Restricted FAs" subtitle="If another team signs them to an offer sheet, you have 48 hours to match." fas={rfa} onResign={isYourTeam ? setResign : undefined} onRenounce={isYourTeam ? renounce : undefined} />
       )}
 
+      {isYourTeam && (
+        <div className="mt-4 pt-3 border-t border-zinc-800 flex items-center justify-between">
+          <div className="text-xs text-zinc-500">
+            Any FA you don&apos;t sign or renounce will be auto re-signed at market value when you sim.
+          </div>
+          <Link
+            href="/free-agents"
+            className="px-3 py-1.5 rounded-md bg-orange-500 hover:bg-orange-400 text-black font-semibold text-xs"
+          >
+            Continue to Free Agency →
+          </Link>
+        </div>
+      )}
+
       {resign && (
-        <ResignModal fa={resign} tricode={tricode} mode={mode} onClose={() => setResign(null)} onDone={() => { setResign(null); load(); router.refresh(); }} />
+        <ResignModal
+          fa={resign}
+          tricode={tricode}
+          mode={mode}
+          season={season}
+          onClose={() => setResign(null)}
+          onDone={() => {
+            setResign(null);
+            load();
+            router.refresh();
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new Event("nba-gm:data-changed"));
+            }
+          }}
+        />
       )}
     </div>
   );
@@ -114,10 +157,11 @@ function FASection({ title, subtitle, fas, onResign, onRenounce }: {
   );
 }
 
-function ResignModal({ fa, tricode, mode, onClose, onDone }: {
+function ResignModal({ fa, tricode, mode, season, onClose, onDone }: {
   fa: OwnFA;
   tricode: string;
   mode: "career" | "offseason";
+  season: string;
   onClose: () => void;
   onDone: () => void;
 }) {
@@ -134,7 +178,7 @@ function ResignModal({ fa, tricode, mode, onClose, onDone }: {
       const r = await api.signPlayer({
         player_id: fa.player_id,
         team: tricode,
-        first_season: "2026-27",
+        first_season: season,
         salary_year1: Math.round(salaryM * 1_000_000),
         years,
         using: "BIRD",

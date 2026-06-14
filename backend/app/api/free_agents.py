@@ -20,20 +20,25 @@ def get_db():
 
 @router.get("")
 def list_free_agents(fa_type: str | None = None, db: Session = Depends(get_db)):
+    from app.api.state import SEASONS_ORDER
+    from app.cba.constants import min_salary
+    from app.db.schema import Season
+    # Use the current offseason as the basis for market value / min salary / cap hold lookup
+    simmed = {s.season for s in db.query(Season).filter(Season.simulated == True).all()}
+    current_season = next((s for s in SEASONS_ORDER if s not in simmed), SEASONS_ORDER[-1])
+
     q = db.query(Player).filter(Player.is_free_agent == True)
     if fa_type:
         q = q.filter(Player.fa_type == fa_type.upper())
     fas = q.order_by(Player.overall.desc().nullslast()).all()
-    # Pre-load cap holds to find prior-team links
     holds_by_player = {
         h.player_id: h.team_tricode
-        for h in db.query(CapHold).filter(CapHold.season == "2026-27", CapHold.renounced == False).all()
+        for h in db.query(CapHold).filter(CapHold.season == current_season, CapHold.renounced == False).all()
     }
-    from app.cba.constants import min_salary
     out = []
     for p in fas:
-        mv = expected_market_value(p.overall, p.age, "2026-27", p.position)
-        floor_min = min_salary(p.years_of_service or 0, "2026-27")
+        mv = expected_market_value(p.overall, p.age, current_season, p.position)
+        floor_min = min_salary(p.years_of_service or 0, current_season)
         out.append({
             "id": p.id,
             "name": p.name,
@@ -46,5 +51,6 @@ def list_free_agents(fa_type: str | None = None, db: Session = Depends(get_db)):
             "prior_team": holds_by_player.get(p.id) or p.team_tricode,
             "market_value": mv,
             "min_salary_for_yos": floor_min,
+            "season": current_season,
         })
     return out

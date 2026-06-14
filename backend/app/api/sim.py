@@ -66,6 +66,15 @@ def run_season(season: str, db: Session = Depends(get_db)):
         existing.simulated = False
         existing.champion_tricode = None
         db.commit()
+    # Pre-sim housekeeping:
+    #   1) Auto re-sign any unsigned cap-hold FAs (Bird-rights players whose old
+    #      team didn't act in the offseason) to their old team at market value.
+    #   2) Enforce 15-standard + 3-two-way roster limits so no team plays the
+    #      season with an illegal roster.
+    from app.cba.auto_signings import auto_resign_unsigned_fas
+    from app.cba.roster import enforce_roster_max
+    auto_resign_unsigned_fas(db, season)
+    roster_trim = enforce_roster_max(db)
     sim = simulate_season(db, season)
     return {
         "season": sim.season,

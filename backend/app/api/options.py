@@ -103,32 +103,30 @@ def decide_option(req: OptionDecisionIn, db: Session = Depends(get_db)):
             player.is_free_agent = True
             if not player.fa_type:
                 player.fa_type = "UFA"
-            # Always add a cap hold on the former team — they retain Bird rights
-            # until they renounce or the hold gets replaced by a new contract.
-            existing_hold = db.query(CapHold).filter(
-                CapHold.player_id == player.id,
-                CapHold.season == "2026-27",
-                CapHold.renounced == False,
-            ).first()
-            if not existing_hold:
-                # Cap hold formula: CBA says ~150% of last salary for vets, but we
-                # cap at 135% of expected market value to prevent the hold from
-                # being wildly above what the player is actually worth.
-                from app.cba.market_value import expected_market_value
-                yos = player.years_of_service or 0
-                cba_raw = max(int(salary_str * (2.5 if yos <= 2 else 1.5)), 5_000_000) if salary_str > 3_000_000 else salary_str
-                market = expected_market_value(player.overall, player.age, "2026-27", player.position)
-                hold_amount = min(cba_raw, int(market * 1.35))
-                # Floor at 50% of last salary (prevents tiny holds for stars after a low-salary year)
-                hold_amount = max(hold_amount, int(salary_str * 0.5))
-                db.add(CapHold(
-                    player_id=player.id,
-                    team_tricode=team_before,
-                    season="2026-27",
-                    amount=hold_amount,
-                    renounced=False,
-                    notes=f"Hold from declined option (${salary_str:,})",
-                ))
+            # Only create a cap hold if the user EXPLICITLY wants to keep Bird
+            # rights to re-sign. A plain "Send to FA" assumes the team is letting
+            # the player walk — no hold, no need for the user to renounce later.
+            if req.intent_to_resign:
+                existing_hold = db.query(CapHold).filter(
+                    CapHold.player_id == player.id,
+                    CapHold.season == "2026-27",
+                    CapHold.renounced == False,
+                ).first()
+                if not existing_hold:
+                    from app.cba.market_value import expected_market_value
+                    yos = player.years_of_service or 0
+                    cba_raw = max(int(salary_str * (2.5 if yos <= 2 else 1.5)), 5_000_000) if salary_str > 3_000_000 else salary_str
+                    market = expected_market_value(player.overall, player.age, "2026-27", player.position)
+                    hold_amount = min(cba_raw, int(market * 1.35))
+                    hold_amount = max(hold_amount, int(salary_str * 0.5))
+                    db.add(CapHold(
+                        player_id=player.id,
+                        team_tricode=team_before,
+                        season="2026-27",
+                        amount=hold_amount,
+                        renounced=False,
+                        notes=f"Hold from declined option (${salary_str:,})",
+                    ))
         action = "DECLINED"
 
     db.add(Transaction(

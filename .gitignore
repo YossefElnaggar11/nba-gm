@@ -22,6 +22,18 @@ backend/data/*.db-shm
 # Cache
 backend/data/raw/html_cache/
 
+# Local env (.env.example IS tracked as a template)
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+backend/.env
+backend/.env.local
+!frontend/.env.example
+!backend/.env.example
+
+# Vercel
+.vercel
+
 # OS/editor
 .DS_Store
 .vscode/

@@ -79,9 +79,12 @@ export type CapSheet = {
     player_id: number;
     name: string;
     age: number | null;
+    overall: number | null;
+    position: string | null;
     salary: number;
     option_type: string;
     guaranteed: boolean;
+    is_two_way: boolean;
   }[];
   cap_holds: {
     hold_id: number;
@@ -90,6 +93,41 @@ export type CapSheet = {
     age: number | null;
     amount: number;
     notes: string | null;
+  }[];
+};
+
+export type ExceptionInfo = {
+  label: string;
+  amount: number;
+  available: boolean;
+  note: string;
+};
+
+export type TeamExceptions = {
+  team: string;
+  season: string;
+  is_over_cap: boolean;
+  is_above_tax: boolean;
+  is_above_first_apron: boolean;
+  is_above_second_apron: boolean;
+  cap_space: number;
+  mle: ExceptionInfo;
+  bae: ExceptionInfo;
+  minimum: ExceptionInfo;
+  bird_eligible: {
+    player_id: number;
+    name: string;
+    age: number | null;
+    overall: number | null;
+    position: string | null;
+    hold_amount: number;
+  }[];
+  trade_exceptions: {
+    id: number;
+    amount_total: number;
+    remaining: number;
+    expires: string;
+    source: string | null;
   }[];
 };
 
@@ -183,14 +221,35 @@ export class ApiError extends Error {
   }
 }
 
+// Retry up to N times on network-level failures (e.g. backend restarting,
+// transient connection refused). Doesn't retry on 4xx/5xx responses — only
+// on actual fetch() rejections.
+async function fetchWithRetry(url: string, init?: RequestInit, retries = 2): Promise<Response> {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fetch(url, init);
+    } catch (e) {
+      lastErr = e;
+      if (attempt < retries) {
+        // Tiny backoff: 150ms, 400ms
+        await new Promise(r => setTimeout(r, attempt === 0 ? 150 : 400));
+      }
+    }
+  }
+  throw lastErr instanceof Error
+    ? new Error(`Network error: ${lastErr.message} (after ${retries + 1} attempts)`)
+    : new Error(`Network error after ${retries + 1} attempts`);
+}
+
 async function getJSON<T>(path: string): Promise<T> {
-  const r = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
+  const r = await fetchWithRetry(`${API_BASE}${path}`, { cache: "no-store" });
   if (!r.ok) throw new Error(`${r.status} ${r.statusText} on ${path}`);
   return r.json();
 }
 
 async function postJSON<T>(path: string, body: unknown): Promise<T> {
-  const r = await fetch(`${API_BASE}${path}`, {
+  const r = await fetchWithRetry(`${API_BASE}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -313,6 +372,7 @@ export const api = {
   roster: (t: string) => getJSON<Roster>(`/api/teams/${t}/roster`),
   ownFAs: (t: string) => getJSON<{ team: string; season: string; own_fas: OwnFA[] }>(`/api/teams/${t}/own-free-agents`),
   capSheet: (t: string, season = "2026-27") => getJSON<CapSheet>(`/api/cap/team/${t}?season=${season}`),
+  teamExceptions: (t: string, season = "2026-27") => getJSON<TeamExceptions>(`/api/cap/team/${t}/exceptions?season=${season}`),
   capLevels: () => getJSON<Record<string, { salary_cap: number; luxury_tax: number; first_apron: number; second_apron: number; projected?: boolean }>>("/api/cap/levels"),
   draftOrder: (year: number) => getJSON<DraftPick[]>(`/api/draft/${year}/order`),
   teamArsenal: (t: string) => getJSON<{ team: string; picks: { year: number; round: number; pick_number: number | null; original: string; is_swap: boolean; protection: string | null }[] }>(`/api/draft/team/${t}/arsenal`),
@@ -358,6 +418,8 @@ export const api = {
     postJSON<{ ok: boolean; mode: string; message: string }>("/api/admin/enter-mode", { mode }),
   getMode: () => getJSON<{ mode: string }>("/api/admin/mode"),
   saveCareer: () => postJSON<{ ok: boolean; message: string }>("/api/admin/save-career", {}),
+  releasePlayer: (player_id: number) =>
+    postJSON<{ ok: boolean; player: string; released_from: string }>("/api/admin/release-player", { player_id }),
   renounceHold: (hold_id: number) =>
     postJSON<{ ok: boolean; player: string | null; amount_cleared: number }>(`/api/admin/renounce-hold/${hold_id}`, {}),
 };

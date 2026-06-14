@@ -24,11 +24,14 @@ export function TeamDashboard({ viewTricode }: { viewTricode: string }) {
   const [options, setOptions] = useState<PendingOption[]>([]);
   const [working, setWorking] = useState<number | null>(null);
   const [resign, setResign] = useState<ResignFlow>(null);
+  const [season, setSeason] = useState<string>("2026-27");
 
   const isYour = ready && userTeam === viewTricode;
 
   const load = async () => {
-    const r = await api.pendingOptions(viewTricode);
+    const s = await api.state();
+    setSeason(s.current_season);
+    const r = await api.pendingOptions(viewTricode, s.current_season);
     setOptions(r);
   };
   useEffect(() => { if (isYour) load(); }, [isYour, viewTricode]);
@@ -36,10 +39,10 @@ export function TeamDashboard({ viewTricode }: { viewTricode: string }) {
   if (!ready) return null;
   if (!isYour) {
     return (
-      <div className="bg-zinc-900/40 border border-zinc-800 rounded-lg p-4 mb-6 text-sm text-zinc-400 flex items-center justify-between">
+      <div className="bg-zinc-900/40 border border-zinc-800 rounded-lg p-3 mb-4 text-sm text-zinc-400 flex items-center justify-between">
         <div>
-          You&apos;re viewing <span className="font-bold text-zinc-200">{viewTricode}</span> but you&apos;re GMing{" "}
-          {userTeam ? <span className="font-bold text-orange-400">{userTeam}</span> : <span className="text-zinc-500">no team picked</span>}.
+          Viewing <span className="font-bold text-zinc-200">{viewTricode}</span>.
+          You GM {userTeam ? <span className="font-bold text-orange-400">{userTeam}</span> : <span className="text-zinc-500">no team picked</span>}.
         </div>
         {userTeam ? (
           <Link href={`/team/${userTeam}`} className="text-xs px-3 py-1 rounded bg-zinc-800 hover:bg-zinc-700">
@@ -101,60 +104,63 @@ export function TeamDashboard({ viewTricode }: { viewTricode: string }) {
   const playerOpts = options.filter(o => o.decided_by === "PLAYER");
   const teamOpts = options.filter(o => o.decided_by === "TEAM");
 
+  // If there are no pending options, suppress the panel entirely — the NextStepBanner
+  // already conveys "options handled".
+  if (options.length === 0) {
+    return resign ? (
+      <ResignModal
+        flow={resign}
+        season={season}
+        onClose={() => setResign(null)}
+        onDone={() => { setResign(null); router.refresh(); }}
+      />
+    ) : null;
+  }
+
   return (
     <>
-      <div className="bg-gradient-to-br from-orange-900/20 to-zinc-900 border border-orange-500/40 rounded-xl p-5 mb-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-zinc-900 border border-orange-500/40 rounded-xl p-5 mb-6">
+        <div className="flex items-center justify-between mb-3">
           <div>
-            <div className="text-xs uppercase tracking-wider text-orange-400 font-bold">GM Decisions</div>
-            <p className="text-sm text-zinc-300 mt-1">
-              Process options first, then sign FAs, run draft, sim season.
+            <div className="text-xs uppercase tracking-wider text-orange-400 font-bold">Pending Options</div>
+            <p className="text-sm text-zinc-400 mt-0.5">
+              {options.length} decision{options.length !== 1 ? "s" : ""} to make for {season}.
             </p>
           </div>
-          <div className="flex gap-2 text-xs">
-            <Link href="/options" className="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700">All Options</Link>
-            <Link href="/trade" className="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700">Trade</Link>
-            <Link href="/free-agents" className="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700">Free Agents</Link>
-            <Link href="/draft/2026/live" className="px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white">Live Draft →</Link>
-            <Link href="/sim" className="px-3 py-1.5 rounded bg-orange-500 hover:bg-orange-400 text-black font-medium">Sim Season →</Link>
-          </div>
+          <Link href="/options" className="text-xs px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700">
+            Full options view →
+          </Link>
         </div>
 
-        {options.length === 0 ? (
-          <div className="text-sm text-zinc-500 italic">No pending option decisions for {viewTricode}.</div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <DecisionList
-              title="Player Options"
-              subtitle="Player decides. Most stars will opt out for bigger deals."
-              options={playerOpts}
-              onPickup={pickup}
-              onSendToFA={sendToFA}
-              onDeclineResign={declineAndResign}
-              working={working}
-            />
-            <DecisionList
-              title="Team Options"
-              subtitle="You decide. Pick up, send to FA, or decline & re-sign on a new deal."
-              options={teamOpts}
-              onPickup={pickup}
-              onSendToFA={sendToFA}
-              onDeclineResign={declineAndResign}
-              working={working}
-              showResignOption
-            />
-          </div>
-        )}
-        {mode === "career" && (
-          <div className="mt-4 text-xs text-zinc-500">
-            Full GM Mode active: AI evaluates trade offers, FAs reject lowball signings.
-          </div>
-        )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <DecisionList
+            title="Player Options"
+            subtitle="The player decides. Most stars opt out for bigger deals."
+            options={playerOpts}
+            season={season}
+            onPickup={pickup}
+            onSendToFA={sendToFA}
+            onDeclineResign={declineAndResign}
+            working={working}
+          />
+          <DecisionList
+            title="Team Options"
+            subtitle="You decide. Pick up, send to FA, or decline & re-sign on a new deal."
+            options={teamOpts}
+            season={season}
+            onPickup={pickup}
+            onSendToFA={sendToFA}
+            onDeclineResign={declineAndResign}
+            working={working}
+            showResignOption
+          />
+        </div>
       </div>
 
       {resign && (
         <ResignModal
           flow={resign}
+          season={season}
           onClose={() => setResign(null)}
           onDone={() => { setResign(null); router.refresh(); }}
         />
@@ -164,11 +170,12 @@ export function TeamDashboard({ viewTricode }: { viewTricode: string }) {
 }
 
 function DecisionList({
-  title, subtitle, options, onPickup, onSendToFA, onDeclineResign, working, showResignOption = true,
+  title, subtitle, options, season, onPickup, onSendToFA, onDeclineResign, working, showResignOption = true,
 }: {
   title: string;
   subtitle: string;
   options: PendingOption[];
+  season: string;
   onPickup: (id: number) => void;
   onSendToFA: (id: number) => void;
   onDeclineResign: (id: number) => void;
@@ -188,7 +195,7 @@ function DecisionList({
               <div className="flex items-center justify-between mb-1.5">
                 <div>
                   <div className="font-medium">{o.player_name}</div>
-                  <div className="text-xs text-zinc-500">{fmt$(o.salary)} for 2026-27</div>
+                  <div className="text-xs text-zinc-500">{fmt$(o.salary)} for {season}</div>
                 </div>
               </div>
               <div className="flex gap-1 flex-wrap">
@@ -224,7 +231,7 @@ function DecisionList({
   );
 }
 
-function ResignModal({ flow, onClose, onDone }: { flow: NonNullable<ResignFlow>; onClose: () => void; onDone: () => void }) {
+function ResignModal({ flow, season, onClose, onDone }: { flow: NonNullable<ResignFlow>; season: string; onClose: () => void; onDone: () => void }) {
   const { mode } = useUserContext();
   // Default to MIN legal salary — user negotiates up
   const [salaryM, setSalaryM] = useState<number>(Math.round(flow.minSalaryForYos / 100_000) / 10);
@@ -239,7 +246,7 @@ function ResignModal({ flow, onClose, onDone }: { flow: NonNullable<ResignFlow>;
       const r = await api.signPlayer({
         player_id: flow.playerId,
         team: flow.formerTeam,
-        first_season: "2026-27",
+        first_season: season,
         salary_year1: Math.round(salaryM * 1_000_000),
         years,
         using: "BIRD",

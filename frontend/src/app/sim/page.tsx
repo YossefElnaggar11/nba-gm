@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api, ApiError, type SimResponse } from "@/lib/api";
-import { PhaseNav } from "@/app/phase-nav";
 import { useUserContext } from "@/lib/user-context";
 import { RosterPreview } from "@/app/team/[tricode]/roster-preview";
 import { BackButton } from "@/app/back-button";
@@ -27,17 +26,22 @@ export default function SimPage() {
   const [busy, setBusy] = useState(false);
   const [simError, setSimError] = useState<string | null>(null);
   const [draftStatus, setDraftStatus] = useState<DraftStatus | null>(null);
+  const [standardCount, setStandardCount] = useState<number | null>(null);
 
-  // Re-read game state + draft progress
+  // Re-read game state + draft progress + roster size
   const refreshStatus = async () => {
     try {
       const s = await api.state();
       setSeason(s.current_season);
       setDraftYear(s.current_draft_year);
-      // Check if this season's draft is complete
       const nextPick = await api.nextPick(s.current_draft_year);
       const undrafted = nextPick.done ? 0 : await countUndrafted(s.current_draft_year);
       setDraftStatus({ done: undrafted === 0, pending: undrafted });
+      // Check user team's roster size
+      if (userTeamCtx) {
+        const roster = await api.capSheet(userTeamCtx, s.current_season).catch(() => null);
+        if (roster) setStandardCount(roster.players.filter(p => !p.is_two_way).length);
+      }
     } catch {}
   };
 
@@ -49,7 +53,6 @@ export default function SimPage() {
   if (mode === "offseason") {
     return (
       <div className="max-w-2xl mx-auto px-6 py-12 text-center">
-        <PhaseNav />
         <h1 className="text-2xl font-bold mb-3">Season simulation isn&apos;t part of Offseason Mode</h1>
         <p className="text-zinc-400 mb-6">
           In Offseason Mode, your goal is to build the roster going into the 2026-27 season — no in-season simulation.
@@ -123,17 +126,17 @@ export default function SimPage() {
   const west = result?.standings.filter(s => s.conference === "West") ?? [];
   const userRecord = result?.standings.find(s => s.tricode === userTeam);
 
-  const canSim = draftStatus?.done === true;
+  const rosterOverflow = standardCount !== null && standardCount > 15;
+  const canSim = draftStatus?.done === true && !rosterOverflow;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
       <BackButton />
-      <PhaseNav />
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Season Simulation</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Sim {season}</h1>
           <p className="text-zinc-400 mt-1">
-            Sim {season}: regular season + 16-team playoffs + awards. Re-runs replace prior results.
+            Regular season + 16-team playoffs + awards. Re-running replaces prior results.
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm">
@@ -144,7 +147,10 @@ export default function SimPage() {
           <button
             onClick={sim}
             disabled={busy || !canSim}
-            title={!canSim ? `Complete the ${draftYear} draft first` : ""}
+            title={
+              !draftStatus?.done ? `Complete the ${draftYear} draft first` :
+              rosterOverflow ? `Release ${standardCount! - 15} player(s) first` : ""
+            }
             className="px-4 py-2 rounded bg-orange-500 hover:bg-orange-400 text-black font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {busy ? "Simulating…" : "Sim Season"}
@@ -153,7 +159,7 @@ export default function SimPage() {
       </div>
 
       {/* Pre-sim gate: draft must be done */}
-      {!canSim && draftStatus && (
+      {!draftStatus?.done && draftStatus && (
         <div className="mb-6 p-5 rounded-xl border-2 border-orange-500/60 bg-orange-900/10">
           <div className="flex items-center justify-between">
             <div>
@@ -165,6 +171,29 @@ export default function SimPage() {
             <Link href={`/draft/${draftYear}/live`} className="px-4 py-2 rounded bg-orange-500 hover:bg-orange-400 text-black font-bold">
               → Go to Live Draft
             </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Pre-sim gate: roster must be at or under the 15-standard limit */}
+      {rosterOverflow && userTeam && (
+        <div className="mb-6 p-5 rounded-xl border-2 border-red-500/60 bg-red-900/10">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="font-semibold text-red-300 text-lg">⛔ Roster over the limit</div>
+              <div className="text-sm text-zinc-300 mt-1">
+                {userTeam} has <span className="font-mono font-bold">{standardCount}</span> standard contracts.
+                The NBA max is 15. Release or trade <span className="font-mono font-bold">{standardCount! - 15}</span> player{standardCount! - 15 === 1 ? "" : "s"} before simming.
+              </div>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Link href={`/team/${userTeam}`} className="px-3 py-2 rounded bg-zinc-800 hover:bg-zinc-700 text-sm">
+                Release
+              </Link>
+              <Link href="/trade" className="px-3 py-2 rounded bg-orange-500 hover:bg-orange-400 text-black font-bold text-sm">
+                → Open Trade Machine
+              </Link>
+            </div>
           </div>
         </div>
       )}

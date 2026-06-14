@@ -1,51 +1,77 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api, fmt$, type Roster, type Team, type TradeResponse } from "@/lib/api";
 import { useAiVetoDisabled } from "@/lib/ai-veto";
+import { useUserContext } from "@/lib/user-context";
 import { BackButton } from "@/app/back-button";
+import { TeamExceptionsPanel } from "@/app/team-exceptions-panel";
 
 type PickRow = { id: number; year: number; round: number; original: string };
 
+const MAX_TEAMS = 4;
+const FILLER_TEAMS = ["LAL", "MIA", "HOU", "BOS"];
+
 export default function TradePage() {
+  const router = useRouter();
+  const { team: ctxUserTeam, mode } = useUserContext();
   const [teams, setTeams] = useState<Team[]>([]);
-  // Team A defaults to user's chosen team (read from localStorage on mount)
-  const [teamA, setTeamA] = useState("LAL");
-  const [teamB, setTeamB] = useState("MIA");
-  const [teamC, setTeamC] = useState<string | null>(null);
+  const [tricodes, setTricodes] = useState<string[]>(["LAL", "MIA"]);
   const [rosters, setRosters] = useState<Record<string, Roster | null>>({});
   const [picks, setPicks] = useState<Record<string, PickRow[]>>({});
   const [selPlayers, setSelPlayers] = useState<Record<string, Set<number>>>({});
   const [selPicks, setSelPicks] = useState<Record<string, Set<number>>>({});
   const [destPlayer, setDestPlayer] = useState<Record<number, string>>({});
   const [destPick, setDestPick] = useState<Record<number, string>>({});
-  const [careerMode, setCareerMode] = useState(false);
-  const [userTeam, setUserTeam] = useState("LAL");
   const [season, setSeason] = useState("2026-27");
   const [aiDisabled, setAiDisabled] = useAiVetoDisabled();
+  const userTeam = ctxUserTeam ?? "";
+  const careerMode = mode === "career";
   const [result, setResult] = useState<TradeResponse | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const activeTeams = useMemo(
-    () => [teamA, teamB, ...(teamC ? [teamC] : [])],
-    [teamA, teamB, teamC]
-  );
+  const activeTeams = tricodes;
+
+  const setTeamAt = (i: number, value: string) =>
+    setTricodes(prev => prev.map((t, idx) => (idx === i ? value : t)));
+
+  const addTeam = () => {
+    if (tricodes.length >= MAX_TEAMS) return;
+    const filler = FILLER_TEAMS.find(t => !tricodes.includes(t)) ?? "SAS";
+    setTricodes(prev => [...prev, filler]);
+  };
+
+  const removeTeam = (i: number) => {
+    if (tricodes.length <= 2) return;
+    setTricodes(prev => prev.filter((_, idx) => idx !== i));
+    setDestPlayer({});
+    setDestPick({});
+  };
 
   useEffect(() => {
     api.teams().then(setTeams).catch((e) => setError(String(e)));
     api.state().then(s => setSeason(s.current_season)).catch(() => {});
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("nba_gm_user_team");
-      if (saved) {
-        setUserTeam(saved);
-        setTeamA(saved);   // auto-load user's team as Team A
-        // Pick a different team for Team B if same
-        if (saved === "MIA") setTeamB("LAL");
-      }
-      if (localStorage.getItem("nba_gm_mode") === "career") setCareerMode(true);
-    }
   }, []);
+
+  // Sync Team A with the user's chosen team whenever the context loads.
+  useEffect(() => {
+    if (!ctxUserTeam) return;
+    setTricodes(prev => {
+      if (prev[0] === ctxUserTeam) return prev;
+      const next = [...prev];
+      next[0] = ctxUserTeam;
+      // Make sure no other slot duplicates the user's team
+      for (let i = 1; i < next.length; i++) {
+        if (next[i] === ctxUserTeam) {
+          next[i] = FILLER_TEAMS.find(t => !next.includes(t)) ?? "SAS";
+        }
+      }
+      return next;
+    });
+  }, [ctxUserTeam]);
 
   // Load roster + picks for each active team
   useEffect(() => {
@@ -83,7 +109,8 @@ export default function TradePage() {
       for (const t of activeTeams) next[t] = prev[t] ?? new Set();
       return next;
     });
-  }, [teamA, teamB, teamC]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tricodes.join(",")]);
 
   const defaultDest = (srcTeam: string): string => {
     const others = activeTeams.filter((t) => t !== srcTeam);
@@ -154,6 +181,13 @@ export default function TradePage() {
         })),
       });
       setResult(r);
+      if (r.applied) {
+        // Refresh rosters in this view, and invalidate Next's route cache so the
+        // team page reflects the new rosters when the user navigates back.
+        await Promise.all(activeTeams.map(t => api.roster(t).then(rs => setRosters(prev => ({ ...prev, [t]: rs })))));
+        setSelPlayers({}); setSelPicks({});
+        router.refresh();
+      }
     } catch (e) {
       setError(String(e));
     } finally {
@@ -171,56 +205,52 @@ export default function TradePage() {
       <BackButton />
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Trade Machine</h1>
-          <p className="text-zinc-400 text-sm">
-            CBA-enforced. Salary matching (4 tiers), apron restrictions, Stepien rule. Supports 2 or 3 teams.
+          <h1 className="text-3xl font-bold tracking-tight">Trade Machine</h1>
+          <p className="text-zinc-400 text-sm mt-1">
+            CBA-enforced: salary matching, apron restrictions, Stepien rule. Supports 2 or 3 teams.
+            {careerMode && userTeam && (
+              <span className="ml-2 text-orange-400">· You GM {userTeam} — AI evaluates other teams&apos; legs.</span>
+            )}
           </p>
         </div>
-        <div className="flex items-center gap-3 text-sm bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={careerMode}
-              onChange={(e) => {
-                setCareerMode(e.target.checked);
-                if (typeof window !== "undefined") localStorage.setItem("nba_gm_career_mode", String(e.target.checked));
-              }}
-              className="accent-orange-500"
-            />
-            <span>Career Mode</span>
-          </label>
-          {careerMode && (
-            <div className="flex items-center gap-1 border-l border-zinc-700 pl-3">
-              <span className="text-zinc-500 text-xs">You:</span>
-              <input
-                value={userTeam}
-                onChange={(e) => {
-                  const v = e.target.value.toUpperCase();
-                  setUserTeam(v);
-                  if (typeof window !== "undefined") localStorage.setItem("nba_gm_user_team", v);
-                }}
-                className="bg-zinc-800 border border-zinc-700 rounded px-2 py-0.5 text-sm w-16 font-mono"
-              />
-            </div>
-          )}
-        </div>
+        {userTeam && (
+          <Link href={`/team/${userTeam}`} className="shrink-0 px-4 py-2 rounded-md bg-orange-500 hover:bg-orange-400 text-black font-semibold text-sm whitespace-nowrap">
+            Done — back to team →
+          </Link>
+        )}
       </div>
 
-      <div className={`grid gap-4 mb-4 ${teamC ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2"}`}>
+      {/* Team count controls */}
+      <div className="flex items-center gap-2 mb-3 text-xs">
+        <span className="text-zinc-500">{tricodes.length} team{tricodes.length === 1 ? "" : "s"} in this trade</span>
+        {tricodes.length < MAX_TEAMS && (
+          <button
+            onClick={addTeam}
+            className="px-2.5 py-1 rounded border border-dashed border-emerald-700/60 hover:border-emerald-500 hover:bg-emerald-900/20 text-emerald-300"
+          >
+            + Add team {tricodes.length === 2 ? "(3-team trade)" : tricodes.length === 3 ? "(4-team trade)" : ""}
+          </button>
+        )}
+      </div>
+
+      <div className={`grid gap-4 mb-4 ${
+        tricodes.length === 4 ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-4" :
+        tricodes.length === 3 ? "grid-cols-1 md:grid-cols-3" :
+        "grid-cols-1 md:grid-cols-2"
+      }`}>
         {activeTeams.map((t, i) => (
           <TradeSide
             key={t + i}
             label={`Team ${String.fromCharCode(65 + i)}`}
             team={t}
-            setTeam={(v) => {
-              if (i === 0) setTeamA(v);
-              else if (i === 1) setTeamB(v);
-              else setTeamC(v);
-            }}
+            setTeam={(v) => setTeamAt(i, v)}
+            canRemove={tricodes.length > 2}
+            onRemove={() => removeTeam(i)}
             teams={teams}
             activeTeams={activeTeams}
             roster={rosters[t] ?? null}
             picks={picks[t] ?? []}
+            season={season}
             selPlayers={selPlayers[t] ?? new Set()}
             selPicks={selPicks[t] ?? new Set()}
             destPlayer={destPlayer}
@@ -233,28 +263,7 @@ export default function TradePage() {
         ))}
       </div>
 
-      <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-3">
-        <div className="text-sm">
-          {!teamC ? (
-            <button
-              onClick={() => setTeamC("HOU")}
-              className="text-xs px-2.5 py-1 rounded border border-dashed border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800/50 text-zinc-300"
-            >
-              + Add 3rd Team
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                setTeamC(null);
-                setDestPlayer({});
-                setDestPick({});
-              }}
-              className="text-xs px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-400"
-            >
-              − Remove 3rd Team
-            </button>
-          )}
-        </div>
+      <div className="flex items-center justify-end bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-3">
         <div className="flex gap-2">
           <button
             onClick={() => submit(false)}
@@ -309,17 +318,20 @@ export default function TradePage() {
 }
 
 function TradeSide({
-  label, team, setTeam, teams, activeTeams, roster, picks,
+  label, team, setTeam, canRemove, onRemove, teams, activeTeams, roster, picks, season,
   selPlayers, selPicks, destPlayer, destPick,
   onTogglePlayer, onTogglePick, onChangeDest, outSalary,
 }: {
   label: string;
   team: string;
   setTeam: (t: string) => void;
+  canRemove: boolean;
+  onRemove: () => void;
   teams: Team[];
   activeTeams: string[];
   roster: Roster | null;
   picks: PickRow[];
+  season: string;
   selPlayers: Set<number>;
   selPicks: Set<number>;
   destPlayer: Record<number, string>;
@@ -335,7 +347,18 @@ function TradeSide({
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <div className="text-xs uppercase tracking-wider text-zinc-500">{label}</div>
+          <div className="flex items-center gap-2">
+            <div className="text-xs uppercase tracking-wider text-zinc-500">{label}</div>
+            {canRemove && (
+              <button
+                onClick={onRemove}
+                title="Remove this team from the trade"
+                className="text-[10px] px-1.5 py-0.5 rounded border border-zinc-700 hover:border-red-700 hover:bg-red-900/30 text-zinc-500 hover:text-red-300"
+              >
+                Remove
+              </button>
+            )}
+          </div>
           <div className="mt-1 flex items-center gap-2">
             {teams.find(t => t.tricode === team)?.logo_url && (
               <img src={teams.find(t => t.tricode === team)?.logo_url} alt="" className="w-7 h-7 object-contain" />
@@ -362,6 +385,10 @@ function TradeSide({
           <div className="text-zinc-500 text-xs">Outgoing</div>
           <div className="font-semibold">{fmt$(outSalary)}</div>
         </div>
+      </div>
+
+      <div className="mb-3">
+        <TeamExceptionsPanel tricode={team} season={season} variant="tpe-only" />
       </div>
 
       <div className="text-xs uppercase tracking-wider text-zinc-500 mb-1">Players</div>

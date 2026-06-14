@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: nba-gm-backend
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # Set this in the Render dashboard once the Vercel URL is known.
+      # Comma-separated; supports localhost for testing.
+      - key: CORS_ALLOW_ORIGINS
+        value: "*"

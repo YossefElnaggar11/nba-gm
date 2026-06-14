@@ -1,0 +1,19 @@
+# Don't ship local-only artifacts to the Docker image
+backend/.venv
+backend/venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+backend/data/nbagm.db
+backend/data/nbagm_career_save.db
+backend/data/nbagm_career_save.db.*
+backend/data/*.db-wal
+backend/data/*.db-shm
+backend/data/raw/html_cache
+node_modules
+.next
+frontend
+.git
+.gitignore
+.vercel
+.DS_Store

@@ -81,8 +81,8 @@ LEAGUE_AVG_ORTG = 115.0          # modern NBA average
 LEAGUE_AVG_PACE = 99.5           # possessions per 48 minutes (per team)
 HCA_NET_RTG = 3.0                # home court ≈ +3 net rtg
 HCA_NET_RTG_PLAYOFFS = 3.5
-GAME_MARGIN_STD = 11.6           # std dev of game margin around expected
-GAME_MARGIN_STD_PLAYOFFS = 10.6
+GAME_MARGIN_STD = 12.4           # std dev of game margin around expected
+GAME_MARGIN_STD_PLAYOFFS = 11.2
 TEAM_SCORE_STD = 7.5             # std dev of team's total points in a game
 
 # NBA-style depth chart (top 12 only — others get DNP-coach decisions)
@@ -99,6 +99,27 @@ COACHING_NET_RTG: dict[str, float] = {
     "CHI": -0.4, "TOR": -0.3, "SAC": -0.4, "BKN": -0.6, "UTA": -0.5,
     "POR": -0.7, "PHX": -0.8, "NOP": -0.6, "WAS": -1.0, "CHA": -1.0,
 }
+
+# Real 2025-26 NBA net rating (approx, end of season). Used as a Bayesian prior
+# so a team's projected net rating shrinks toward what they actually were last
+# year — prevents data quirks (e.g. a high-paid player tagged to the wrong team
+# in the scraped contracts JSON) from creating phantom contenders.
+PRIOR_NET_RTG_2025_26: dict[str, float] = {
+    "OKC":  12.5, "BOS":   8.0, "CLE":   6.5, "DEN":   5.5, "NYK":   4.5,
+    "MIN":  3.0,  "HOU":   2.5, "LAL":   1.5, "LAC":   1.5, "IND":   1.0,
+    "MIA":  0.5,  "ORL":   0.0, "DET":   0.0, "ATL":  -0.5, "MIL":  -1.0,
+    "DAL": -1.5,  "GSW":  -2.0, "SAC":  -2.0, "MEM":  -2.5, "TOR":  -3.0,
+    "PHI": -4.0,  "POR":  -5.5, "BKN":  -6.5, "PHX":  -6.5, "SAS":  -7.0,
+    "CHI": -7.0,  "CHA":  -9.5, "NOP":  -9.5, "UTA":  -10.0, "WAS": -13.0,
+}
+
+# Bayesian blend weight: how much last year's record anchors this year's
+# projected rating. 0.0 = pure roster-derived (trades/FAs/draft fully count),
+# 1.0 = pure prior (changes ignored). 0.20 lets a real roster improvement
+# (e.g. signing a star FA) move a team's projected rating substantially while
+# still grounding projections so a data quirk doesn't create a phantom
+# contender.
+PRIOR_BLEND_WEIGHT = 0.20
 
 
 def estimate_rating(salary: int, explicit: int | None = None) -> int:
@@ -154,6 +175,10 @@ class TeamProfile:
     d_rtg_full: float            # full-strength DRtg
     coach_net: float
     continuity_net: float
+    # Bayesian shrinkage shift applied to the roster-derived rating to anchor it
+    # to last year's actual performance. Persisted here so per-game rating
+    # computation can apply the same shift.
+    prior_shift: float = 0.0
 
     def full_net_rtg(self) -> float:
         return self.o_rtg_full - self.d_rtg_full + self.coach_net + self.continuity_net
@@ -178,8 +203,14 @@ def _player_rows(db: Session, tricode: str, season: str):
 
 
 def _off_impact(p: PlayerProfile) -> float:
-    """Raw per-100-poss offensive impact above replacement (75 OVR)."""
-    base = (p.ovr - 75) * 0.32          # 95 OVR → +6.4; 65 OVR → -3.2
+    """Raw per-100-poss offensive impact above replacement (75 OVR).
+
+    The slope is intentionally modest — a 90-OVR star contributes about +5
+    ORtg over a 75-OVR baseline player, not +10. This keeps the league
+    competitive: a team of three 88-OVR stars + mediocre depth won't dominate
+    a balanced team of five 80-OVR starters.
+    """
+    base = (p.ovr - 75) * 0.24          # 95 OVR → +4.8; 65 OVR → -2.4
     if p.pos in ("PG", "G"):
         base *= 1.10
     elif p.pos == "SG":
@@ -199,8 +230,9 @@ def _off_impact(p: PlayerProfile) -> float:
 
 
 def _def_impact(p: PlayerProfile) -> float:
-    """Raw per-100-poss defensive impact (positive = good defense)."""
-    base = (p.ovr - 75) * 0.26
+    """Raw per-100-poss defensive impact (positive = good defense). Same
+    moderate slope as offense — defenses don't swing 10 ORtg either."""
+    base = (p.ovr - 75) * 0.20
     if p.pos == "C":
         base *= 1.30
     elif p.pos == "PF":
@@ -299,12 +331,50 @@ def build_team_profile(db: Session, tricode: str, season: str) -> TeamProfile:
         o_total -= 1.5
     coach = COACHING_NET_RTG.get(tricode, 0.0)
     cont = _continuity_bonus(db, profs)
+
+    # Bayesian shrinkage toward last season's net rating. This dampens data
+    # quirks (e.g. a star tagged to the wrong team in the scraped contracts
+    # JSON) without overriding real roster improvements — the weight is only
+    # 20%, so signing a true All-Star moves a team's projection significantly.
+    prior_net = _prior_net_rtg_for(db, tricode, season)
+    prior_shift = 0.0
+    if prior_net is not None:
+        derived_net = (o_total - d_total)
+        blended_net = derived_net * (1 - PRIOR_BLEND_WEIGHT) + prior_net * PRIOR_BLEND_WEIGHT
+        prior_shift = (blended_net - derived_net) / 2.0
+        o_total += prior_shift
+        d_total -= prior_shift
+
     return TeamProfile(
         tricode=tricode, conference=team.conference, division=team.division,
         players=profs,
         o_rtg_full=o_total, d_rtg_full=d_total,
         coach_net=coach, continuity_net=cont,
+        prior_shift=prior_shift,
     )
+
+
+def _prior_net_rtg_for(db: Session, tricode: str, season: str) -> float | None:
+    """Look up last season's net rating. Uses a simulated previous season if we
+    have one (the user just played 2026-27), otherwise the hardcoded 2025-26
+    baseline."""
+    prev = _previous_season(season)
+    rec = db.query(TeamRecord).filter(
+        TeamRecord.season == prev,
+        TeamRecord.team_tricode == tricode,
+    ).first()
+    if rec and rec.wins is not None:
+        # Convert wins to approximate net rating: 41 wins ≈ 0 net rtg,
+        # 60 wins ≈ +8, 22 wins ≈ -8.
+        return (rec.wins - 41) * 0.45
+    return PRIOR_NET_RTG_2025_26.get(tricode)
+
+
+def _previous_season(season: str) -> str:
+    start = int(season.split("-")[0])
+    prev_start = start - 1
+    prev_end = str((prev_start + 1) % 100).zfill(2)
+    return f"{prev_start}-{prev_end}"
 
 
 def team_strength(db: Session, tricode: str, season: str = "2026-27") -> tuple[float, list[tuple[str, int]]]:
@@ -492,6 +562,11 @@ def _effective_ratings(prof: TeamProfile, day: int) -> tuple[float, float]:
     d -= prof.coach_net * 0.5
     o += prof.continuity_net * 0.5
     d -= prof.continuity_net * 0.5
+    # Apply the Bayesian prior shift so per-game projections respect last
+    # season's track record (with a small enough weight that roster changes
+    # still dominate the projection).
+    o += prof.prior_shift
+    d -= prof.prior_shift
     return o, d
 
 
@@ -518,7 +593,7 @@ def simulate_game(home_prof: TeamProfile, away_prof: TeamProfile, day: int,
     # Home court advantage
     expected_margin += (HCA_NET_RTG_PLAYOFFS if is_playoff else HCA_NET_RTG)
     # Cap absurdly large expected margins (NBA real top diff ≈ ±14)
-    expected_margin = max(-22.0, min(22.0, expected_margin))
+    expected_margin = max(-18.0, min(18.0, expected_margin))
     margin_std = GAME_MARGIN_STD_PLAYOFFS if is_playoff else GAME_MARGIN_STD
     actual_margin = random.gauss(expected_margin, margin_std)
     # Total scoring: each team's expected points uses the (their_O + opp_D - league_avg) formula.
@@ -660,12 +735,95 @@ def simulate_regular_season(db: Session, season: str) -> tuple[SimResult, dict[s
 # ---------------------------------------------------------------------------
 
 
+def _trajectory_factor(age: int, ovr: int, potential: int) -> float:
+    """How much above/below baseline production should this player be this season?
+
+    Ascending young players (high potential, age <= 23) get a boost; vets in their
+    decline phase get a discount. Stars in their prime hold steady.
+    """
+    # Ascending: young + room to grow
+    pot_gap = max(0, potential - ovr)
+    if age <= 21 and pot_gap >= 3:
+        return 1.20    # major leap year
+    if age <= 23 and pot_gap >= 3:
+        return 1.15
+    if age <= 25 and pot_gap >= 2:
+        return 1.08
+    # Prime years
+    if 24 <= age <= 28:
+        return 1.0
+    # Declining
+    if age == 29:
+        return 0.99
+    if age == 30:
+        return 0.97
+    if age == 31:
+        return 0.95
+    if age == 32:
+        return 0.92
+    if age == 33:
+        return 0.88
+    if age == 34:
+        return 0.84
+    if age == 35:
+        return 0.80
+    if age >= 36:
+        return 0.74
+    return 1.0
+
+
+def _role_change_multiplier(p: "PlayerProfile") -> float:
+    """If the player is a new top-2 option but historically played fewer minutes,
+    bump their per-36 expectation upward (more responsibility → more usage)."""
+    if p.rank == 0 and p.baseline_mpg and p.baseline_mpg < 28:
+        return 1.15
+    if p.rank <= 1 and p.baseline_mpg and p.baseline_mpg < 24:
+        return 1.10
+    if p.rank <= 3 and p.baseline_mpg and p.baseline_mpg < 18:
+        return 1.05
+    return 1.0
+
+
+def _stat_variance(ovr: int) -> tuple[float, float]:
+    """Stars have tighter variance (more consistent); role players noisier."""
+    if ovr >= 92: return (0.95, 1.05)
+    if ovr >= 87: return (0.92, 1.08)
+    if ovr >= 80: return (0.88, 1.12)
+    return (0.83, 1.17)
+
+
+def _project_from_baseline(baseline_per_36: float, new_mpg: float, trajectory: float,
+                           role_mult: float, var_lo: float, var_hi: float, min_floor: float) -> float:
+    """per-36 baseline → projected per-game with trajectory + role bump + variance."""
+    projected_per_36 = baseline_per_36 * trajectory * role_mult
+    per_game = projected_per_36 * (new_mpg / 36.0)
+    return max(min_floor, per_game * random.uniform(var_lo, var_hi))
+
+
 def _generate_player_season_stats(db: Session, sim: SimResult,
                                   profiles: dict[str, TeamProfile], season: str) -> int:
+    """Generate per-player season stats with a math-based projection model.
+
+    For each stat, the projection is:
+        per_36_projection = baseline_per_36 × trajectory(age, ovr, potential) × role_change_mult
+        per_game = per_36_projection × (new_mpg / 36) × variance
+
+    Where:
+      - baseline_per_36 = (prior season's stat / prior season's mpg) × 36, if known
+      - trajectory: young+high potential → 1.10-1.20, prime 1.0, age 35+ → 0.80-
+      - role_change_mult: 1.10-1.15 if player moved from bench to top-2 option
+      - variance: tighter for stars (±5%), wider for role players (±17%)
+
+    For PPG specifically, we blend the per-36-baseline projection (60%) with the
+    team-share approach (40%). The team-share keeps season totals consistent with
+    team scoring; per-36 keeps each player's production rate honest to history.
+
+    For rookies (no baseline), the team-share approach is the only signal.
+    """
     db.query(PlayerSeasonStats).filter(PlayerSeasonStats.season == season).delete()
     db.flush()
     count = 0
-    # Position-specific weights for distributing team rebound/assist/steal/block totals
+
     POS_REB = {"C": 2.6, "PF": 1.9, "SF": 1.1, "SG": 0.75, "PG": 0.65, "F": 1.5, "G": 0.7}
     POS_AST = {"PG": 2.6, "G": 2.2, "SG": 1.15, "SF": 1.0, "PF": 0.65, "F": 0.8, "C": 0.65}
     POS_STL = {"PG": 1.4, "SG": 1.25, "SF": 1.1, "PF": 0.9, "C": 0.7, "G": 1.3, "F": 1.0}
@@ -678,90 +836,82 @@ def _generate_player_season_stats(db: Session, sim: SimResult,
         team_pts = sim.team_totals[tricode]["team_pts"]
         team_ppg = team_pts / team_games_played if team_games_played else 0
 
-        # Build active rotation with availability fractions
-        rotation: list[tuple[PlayerProfile, float, int]] = []   # (player, availability_factor, games_played)
+        rotation: list[tuple[PlayerProfile, float, int]] = []
         for p in prof.players:
             if p.mpg_share <= 0:
                 continue
             gp = max(0, 82 - p.games_missed)
             if gp < 1:
                 continue
-            availability = gp / 82
-            rotation.append((p, availability, gp))
+            rotation.append((p, gp / 82, gp))
 
-        # Total team weights per stat (mpg × pos_factor × availability)
-        def _ovr_factor(o: int) -> float:
-            return 0.5 + max(0.0, (o - 65) / 30)  # 65 OVR=0.5, 80=1.0, 95=1.5
+        # Team-share weights (for the 40% team-distribution component of PPG)
+        scoring_units = [
+            p.usage_weight * (0.85 + max(0.0, (p.ovr - 70) / 90)) * (DEPTH_MPG[p.rank] / 48)
+            for p, _, _ in rotation
+        ]
+        sum_scoring = sum(scoring_units) or 1.0
 
-        # Scoring share semantics: each player's share of team scoring per game played
-        # = usage_rate × (his minutes / 48). Sum across the rotation ≈ 1.0.
-        # Rebound/assist/steal/block shares use position-weighted minutes with a
-        # gentle OVR bump so all-stars do their thing on both sides of the ledger.
-        scoring_units: list[float] = []
-        reb_units: list[float] = []
-        ast_units: list[float] = []
-        stl_units: list[float] = []
-        blk_units: list[float] = []
-        for p, _avail, _gp in rotation:
+        # Position-weighted units for rookies / no-baseline players (40% fallback)
+        reb_units, ast_units, stl_units, blk_units = [], [], [], []
+        for p, _, _ in rotation:
             mpg = DEPTH_MPG[p.rank]
-            ovrf_mild = 0.75 + max(0.0, (p.ovr - 70) / 50)    # 70 → 0.75, 95 → 1.25
-            # Usage already encodes role; layer in a small star adjustment so a
-            # 95-OVR top option scores a touch more than an 80-OVR top option.
-            usage_adj = p.usage_weight * (0.85 + max(0.0, (p.ovr - 70) / 90))
-            scoring_units.append(usage_adj * (mpg / 48))
+            ovrf_mild = 0.75 + max(0.0, (p.ovr - 70) / 50)
             reb_units.append(POS_REB.get(p.pos, 1.1) * mpg * ovrf_mild)
             ast_units.append(POS_AST.get(p.pos, 1.0) * mpg * ovrf_mild)
             stl_units.append(POS_STL.get(p.pos, 1.0) * mpg * (0.85 + ovrf_mild * 0.2))
             blk_units.append(POS_BLK.get(p.pos, 0.6) * mpg * (0.8 + ovrf_mild * 0.25))
-        sum_scoring = sum(scoring_units) or 1.0
         sum_reb = sum(reb_units) or 1.0
         sum_ast = sum(ast_units) or 1.0
         sum_stl = sum(stl_units) or 1.0
         sum_blk = sum(blk_units) or 1.0
 
-        # NBA team totals (per game): adjusted slightly by team rating
         net = prof.full_net_rtg()
-        team_total_rpg = 43.5 + max(-2, min(2, net * 0.2))      # ~43.5 ± 2
-        team_total_apg = 26.5 + max(-2, min(3, net * 0.3))      # better teams pass more
+        team_total_rpg = 43.5 + max(-2, min(2, net * 0.2))
+        team_total_apg = 26.5 + max(-2, min(3, net * 0.3))
         team_total_spg = 7.6
         team_total_bpg = 5.0
 
         for i, (p, avail, games_played) in enumerate(rotation):
-            mpg_val = DEPTH_MPG[p.rank]
+            new_mpg = DEPTH_MPG[p.rank]
             started = games_played if p.rank < 5 else (games_played // 4 if p.rank < 8 else 0)
+            trajectory = _trajectory_factor(p.age, p.ovr, p.ovr if p.ovr else 60)
+            potential_guess = max(p.ovr, p.ovr + 5) if p.age <= 23 else p.ovr
+            trajectory = _trajectory_factor(p.age, p.ovr, potential_guess)
+            role_mult = _role_change_multiplier(p)
+            var_lo, var_hi = _stat_variance(p.ovr)
 
-            ppg_variance = random.uniform(0.92, 1.08)
+            # PPG: blend per-36 projection (60%) with team-share (40%) if baseline exists.
             scoring_share = scoring_units[i] / sum_scoring
-            ppg = team_ppg * scoring_share * ppg_variance
+            ppg_team = team_ppg * scoring_share
+            if p.baseline_mpg and p.baseline_ppg and p.baseline_mpg >= 8:
+                per_36 = p.baseline_ppg * 36 / p.baseline_mpg
+                ppg_baseline = per_36 * trajectory * role_mult * (new_mpg / 36)
+                ppg_blend = ppg_baseline * 0.6 + ppg_team * 0.4
+            else:
+                ppg_blend = ppg_team
+            ppg = ppg_blend * random.uniform(var_lo, var_hi)
 
-            # Realism guardrails — only superstars (90+) hit 30+ PPG sustainably
+            # PPG guardrails — only stars sustain 30+ PPG seasons
             if p.ovr < 90 and ppg > 28: ppg = 28 + (ppg - 28) * 0.35
             if p.ovr < 86 and ppg > 25: ppg = 25 + (ppg - 25) * 0.45
             if p.ovr < 80 and ppg > 22: ppg = 22 + (ppg - 22) * 0.55
 
-            rpg_share = reb_units[i] / sum_reb
-            ast_share = ast_units[i] / sum_ast
-            stl_share = stl_units[i] / sum_stl
-            blk_share = blk_units[i] / sum_blk
+            # Helper: project each stat from baseline if present, else from team-share
+            def _proj(baseline_val: float, team_total: float, share_units: float, share_sum: float,
+                      min_floor: float) -> float:
+                if p.baseline_mpg and baseline_val and p.baseline_mpg >= 8:
+                    per_36 = baseline_val * 36 / p.baseline_mpg
+                    return _project_from_baseline(per_36, new_mpg, trajectory, role_mult,
+                                                  var_lo, var_hi, min_floor)
+                # Fallback for rookies: team total × position share
+                return max(min_floor, team_total * (share_units / share_sum) * random.uniform(var_lo, var_hi))
 
-            rpg_derived = team_total_rpg * rpg_share * random.uniform(0.88, 1.12)
-            apg_derived = team_total_apg * ast_share * random.uniform(0.88, 1.12)
-            spg_derived = team_total_spg * stl_share * random.uniform(0.85, 1.15)
-            bpg_derived = team_total_bpg * blk_share * random.uniform(0.85, 1.15)
-
-            # Blend with prior-year baseline (when available): 55% baseline + 45% derived,
-            # so traded players' new context still moves their numbers but their established
-            # production carries through.
-            rpg = (p.baseline_rpg * 0.55 + rpg_derived * 0.45) if p.baseline_rpg > 0 else rpg_derived
-            apg = (p.baseline_apg * 0.55 + apg_derived * 0.45) if p.baseline_apg > 0 else apg_derived
-            spg = (p.baseline_spg * 0.55 + spg_derived * 0.45) if p.baseline_spg > 0 else spg_derived
-            bpg = (p.baseline_bpg * 0.55 + bpg_derived * 0.45) if p.baseline_bpg > 0 else bpg_derived
-
-            rpg = max(0.3, rpg)
-            apg = max(0.2, apg)
-            spg = max(0.15, spg)
-            bpg = max(0.05, bpg)
-            mpg = mpg_val
+            rpg = _proj(p.baseline_rpg, team_total_rpg, reb_units[i], sum_reb, 0.3)
+            apg = _proj(p.baseline_apg, team_total_apg, ast_units[i], sum_ast, 0.2)
+            spg = _proj(p.baseline_spg, team_total_spg, stl_units[i], sum_stl, 0.15)
+            bpg = _proj(p.baseline_bpg, team_total_bpg, blk_units[i], sum_blk, 0.05)
+            mpg = new_mpg
 
             # Shooting %s — efficiency rises with OVR but never absurd
             fg_base = 0.45 + max(0, p.ovr - 78) * 0.0035

@@ -12,7 +12,7 @@ from app.cba.rules import (
     compute_team_finances, validate_trade,
 )
 from app.db.schema import (
-    Contract, ContractSeason, DraftPick, Player, Transaction, TransactionType,
+    Contract, ContractSeason, DraftPick, Player, TradeException, Transaction, TransactionType,
 )
 
 router = APIRouter(prefix="/api/trades", tags=["trades"])
@@ -123,10 +123,21 @@ def _summarize(db: Session, proposal: TradeProposal) -> dict:
 
 
 def _apply_trade(db: Session, proposal: TradeProposal) -> int:
-    """Move players and picks per the explicit routing in the proposal."""
+    """Move players and picks per the explicit routing in the proposal, and
+    create Traded Player Exceptions (TPEs) for any team that took back less
+    salary than it sent out."""
+    from app.cba.rules import _player_salary_in_season
+
+    # Track per-team net salary change (positive = took on more $, negative = saved $)
+    sent_by_team: dict[str, int] = {leg.team: 0 for leg in proposal.legs}
+    received_by_team: dict[str, int] = {leg.team: 0 for leg in proposal.legs}
+
     for leg in proposal.legs:
         for pid in leg.outgoing_player_ids:
             dest = proposal.destination("player", pid, leg.team)
+            sal = _player_salary_in_season(db, pid, proposal.season)
+            sent_by_team[leg.team] = sent_by_team.get(leg.team, 0) + sal
+            received_by_team[dest] = received_by_team.get(dest, 0) + sal
             p = db.get(Player, pid)
             p.team_tricode = dest
             p.bird_years_with_team = 0
@@ -137,6 +148,32 @@ def _apply_trade(db: Session, proposal: TradeProposal) -> int:
             dest = proposal.destination("pick", pkid, leg.team)
             pk = db.get(DraftPick, pkid)
             pk.owner_tricode = dest
+
+    # Generate a TPE for any team whose outgoing salary > incoming salary.
+    # NBA reality: TPE = (outgoing - incoming) salary, expires 1 year from creation.
+    for team, sent in sent_by_team.items():
+        received = received_by_team.get(team, 0)
+        diff = sent - received
+        if diff > 0 and len(proposal.legs) >= 2:
+            today = date.today()
+            # Pull a representative player name for the notes
+            src_name = None
+            leg = next((l for l in proposal.legs if l.team == team), None)
+            if leg and leg.outgoing_player_ids:
+                first_p = db.get(Player, leg.outgoing_player_ids[0])
+                if first_p:
+                    src_name = first_p.name
+            db.add(TradeException(
+                team_tricode=team,
+                amount=diff,
+                remaining=diff,
+                created_date=today,
+                expires_date=date(today.year + 1, today.month, today.day),
+                season_created=proposal.season,
+                source_player_name=src_name,
+                used_up=False,
+                notes=f"Generated from trade (net outgoing ${diff:,})",
+            ))
 
     teams_str = " <-> ".join(leg.team for leg in proposal.legs)
     tx = Transaction(

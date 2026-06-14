@@ -115,12 +115,13 @@ def _create_rookie_contract(db: Session, prospect: Prospect, team: str, pick_num
                 guaranteed=(i < 2),
             ))
     else:
-        # 2nd-rounder — minimum 2-year deal, non-guaranteed
+        # 2nd-rounder — default to two-way deal so they don't eat a standard roster slot
         contract = Contract(
             player_id=player.id, team_tricode=team,
             signed_date=date(2026, 7, 1),
             signed_using="MIN",
             is_active=True,
+            is_two_way=True,
         )
         db.add(contract)
         db.flush()

@@ -4,7 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { api, type NextPick, type Prospect } from "@/lib/api";
 import { useUserContext } from "@/lib/user-context";
-import { PhaseNav, NextPhaseButton } from "@/app/phase-nav";
+import { useNextOffseasonStep } from "@/lib/use-next-step";
 import { BackButton } from "@/app/back-button";
 
 export default function LiveDraftPage({ params }: { params: Promise<{ year: string }> }) {
@@ -12,6 +12,7 @@ export default function LiveDraftPage({ params }: { params: Promise<{ year: stri
   const yearNum = parseInt(year, 10);
   const { team: ctxTeam, ready } = useUserContext();
   const [userTeam, setUserTeam] = useState<string>("");
+  const nextStep = useNextOffseasonStep("draft");
   const [next, setNext] = useState<NextPick | null>(null);
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [recentPicks, setRecentPicks] = useState<Array<{ pick: number; round: number; team: string; player: string; overall: number | null }>>([]);
@@ -84,19 +85,22 @@ export default function LiveDraftPage({ params }: { params: Promise<{ year: stri
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
       <BackButton />
-      <PhaseNav />
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{yearNum} NBA Draft — Live</h1>
           <p className="text-zinc-400 mt-1">
-            You GM <span className="text-orange-400 font-mono font-bold">{userTeam}</span> · AI auto-picks for the other 29
+            You GM <span className="text-orange-400 font-mono font-bold">{userTeam}</span>. The AI auto-picks for the other 29 teams.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Link href="/trade" className="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-sm">
             🔄 Draft-Day Trade
           </Link>
-          <NextPhaseButton from="draft" />
+          {draftOver && userTeam && (
+            <Link href={nextStep.href} className="px-4 py-2 rounded-md bg-orange-500 hover:bg-orange-400 text-black font-semibold text-sm">
+              {nextStep.label}
+            </Link>
+          )}
         </div>
       </div>
 

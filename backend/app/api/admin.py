@@ -35,12 +35,39 @@ def get_db():
 
 @router.post("/reset")
 def reset_game():
-    """Wipe all data and re-run the full seed in-place. Affects the CURRENTLY
-    active mode's state only."""
+    """Hard reset: wipe the working DB AND delete the career save backup so
+    the user gets a truly fresh 2026 offseason next time they enter either
+    mode. Also forces a clean schema (drop_all + create_all) to scrub any
+    stale tables left over from prior versions."""
+    global _active_mode
+    from app.db.schema import Base
     from app.db.seed import main as seed_main
     from app.main import engine
+
+    # Delete the career save backup so the user can't accidentally restore old state
+    deleted_backup = False
+    if CAREER_BACKUP.exists():
+        try:
+            CAREER_BACKUP.unlink()
+            deleted_backup = True
+        except Exception:
+            pass
+
+    # Drop + recreate every table so any leftover schema state is purged
+    try:
+        engine.dispose()
+        Base.metadata.drop_all(engine)
+        Base.metadata.create_all(engine)
+    except Exception:
+        pass
+
     seed_main(engine=engine)
-    return {"ok": True, "message": f"Game reset (mode={_active_mode})."}
+    _active_mode = "career"
+    return {
+        "ok": True,
+        "message": "Hard reset complete — career save cleared, 2026 offseason restored.",
+        "career_backup_deleted": deleted_backup,
+    }
 
 
 class EnterModeIn(BaseModel):
@@ -61,12 +88,24 @@ def enter_mode(req: EnterModeIn):
     if target not in ("career", "offseason"):
         raise HTTPException(400, "mode must be 'career' or 'offseason'")
 
+    from app.db.schema import Base
     from app.db.seed import main as seed_main
     from app.main import engine
 
     msg_parts = []
 
     if target == "offseason":
+        # Fully drop + recreate all tables so the Offseason sandbox is *guaranteed*
+        # independent from any prior Career state. (seed_main also wipes data,
+        # but drop_all + create_all gives total isolation from any leftover
+        # schema differences or stale rows.)
+        from app.db.schema import Base
+        try:
+            engine.dispose()
+            Base.metadata.drop_all(engine)
+            Base.metadata.create_all(engine)
+        except Exception:
+            pass
         seed_main(engine=engine)
         msg_parts.append("fresh sandbox started")
     else:
@@ -74,6 +113,9 @@ def enter_mode(req: EnterModeIn):
             try:
                 engine.dispose()
                 shutil.copy2(CAREER_BACKUP, DB_PATH)
+                # The backup may have been created before newer tables existed
+                # (e.g. TradeException). Ensure all tables are present.
+                Base.metadata.create_all(engine)
                 msg_parts.append("career state restored from last save")
             except Exception as e:
                 seed_main(engine=engine)
@@ -102,6 +144,48 @@ def save_career():
         return {"ok": True, "message": "Career state saved"}
     except Exception as e:
         return {"ok": False, "message": str(e)}
+
+
+class ReleaseIn(BaseModel):
+    player_id: int
+
+
+@router.post("/release-player")
+def release_player(req: ReleaseIn):
+    """Waive a player to free agency. Deactivates their contract and clears the
+    team's books for them (game simplification — real NBA stretches dead money)."""
+    from app.main import SessionLocal
+    from app.db.schema import Player as _P
+    db = SessionLocal()
+    try:
+        p = db.get(_P, req.player_id)
+        if not p:
+            raise HTTPException(404, "Player not found")
+        old_team = p.team_tricode
+        for c in p.contracts:
+            if c.is_active:
+                c.is_active = False
+        p.team_tricode = None
+        p.is_free_agent = True
+        p.fa_type = "UFA"
+        db.commit()
+        return {"ok": True, "player": p.name, "released_from": old_team}
+    finally:
+        db.close()
+
+
+@router.post("/enforce-roster-max")
+def enforce_roster_max():
+    """Trim every team to 15 standard + 3 two-way contracts. Excess players go
+    to FA. Useful before simming a season or as a manual cleanup."""
+    from app.cba.roster import enforce_roster_max as _enforce
+    from app.main import SessionLocal
+    db = SessionLocal()
+    try:
+        result = _enforce(db)
+        return {"ok": True, **result}
+    finally:
+        db.close()
 
 
 @router.post("/renounce-hold/{hold_id}")

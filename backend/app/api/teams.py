@@ -105,17 +105,22 @@ def get_roster(tricode: str, db: Session = Depends(get_db)):
 
 @router.get("/{tricode}/own-free-agents")
 def get_own_free_agents(tricode: str, db: Session = Depends(get_db)):
-    """Players the team has Bird rights to (cap hold on the team's books)."""
+    """Players the team has Bird rights to (cap hold on the team's books).
+    Uses the current game season (the offseason the user is in)."""
+    from app.api.state import SEASONS_ORDER
     from app.cba.constants import min_salary
     from app.cba.market_value import expected_market_value
-    from app.db.schema import CapHold
+    from app.db.schema import CapHold, Season
     tricode = tricode.upper()
+    # Current season = first non-simmed in scope
+    simmed = {s.season for s in db.query(Season).filter(Season.simulated == True).all()}
+    current_season = next((s for s in SEASONS_ORDER if s not in simmed), SEASONS_ORDER[-1])
     rows = (
         db.query(CapHold, Player)
         .join(Player, Player.id == CapHold.player_id)
         .filter(
             CapHold.team_tricode == tricode,
-            CapHold.season == "2026-27",
+            CapHold.season == current_season,
             CapHold.renounced == False,
             Player.is_free_agent == True,
         )
@@ -124,7 +129,7 @@ def get_own_free_agents(tricode: str, db: Session = Depends(get_db)):
     )
     out = []
     for hold, p in rows:
-        market = expected_market_value(p.overall, p.age, "2026-27", p.position)
+        market = expected_market_value(p.overall, p.age, current_season, p.position)
         out.append({
             "hold_id": hold.id,
             "player_id": p.id,
@@ -133,11 +138,10 @@ def get_own_free_agents(tricode: str, db: Session = Depends(get_db)):
             "position": p.position,
             "overall": p.overall,
             "years_of_service": p.years_of_service,
-            "fa_type": p.fa_type or "UFA",   # RFA / UFA
+            "fa_type": p.fa_type or "UFA",
             "hold_amount": hold.amount,
             "market_value": market,
-            "min_salary": min_salary(p.years_of_service or 0, "2026-27"),
-            # Bird rights = can re-sign for up to max contract regardless of cap
+            "min_salary": min_salary(p.years_of_service or 0, current_season),
             "bird_eligible": True,
         })
-    return {"team": tricode, "season": "2026-27", "own_fas": out}
+    return {"team": tricode, "season": current_season, "own_fas": out}
