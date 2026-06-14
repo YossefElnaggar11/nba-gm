@@ -273,18 +273,24 @@ def validate_trade(db: Session, proposal: TradeProposal) -> list[Violation]:
                 team=leg.team,
             ))
 
-    # 4. Stepien rule — cannot trade away consecutive future 1st-rounders
+    # 4. Stepien rule — cannot trade away consecutive future 1st-rounders.
+    # Evaluate per team and consider ALL outgoing picks together (so a single
+    # trade that ships out two adjacent 1sts is caught even though each pick
+    # alone would pass).
     for leg in proposal.legs:
+        all_outgoing_pick_ids = set(leg.outgoing_pick_ids)
         for pkid in leg.outgoing_pick_ids:
             pk = db.get(DraftPick, pkid)
             if pk and pk.round == 1 and pk.original_team_tricode == leg.team:
-                if _would_violate_stepien(db, leg.team, pk.season_year, exclude_pick_id=pkid):
+                if _would_violate_stepien(db, leg.team, pk.season_year,
+                                          exclude_pick_ids=all_outgoing_pick_ids):
                     violations.append(Violation(
                         "STEPIEN_RULE", Severity.BLOCKER,
                         f"{leg.team} cannot trade away its {pk.season_year} 1st-round pick — "
                         f"would leave them without a 1st in two consecutive seasons.",
                         team=leg.team,
                     ))
+                    break   # one Stepien violation per team is enough
 
     # Roster size check — would any team end up with more than 15 standard contracts?
     from app.cba.roster import STANDARD_ROSTER_MAX
@@ -337,27 +343,30 @@ def validate_trade(db: Session, proposal: TradeProposal) -> list[Violation]:
     return violations
 
 
-def _would_violate_stepien(db: Session, team: str, traded_year: int, exclude_pick_id: int) -> bool:
+def _would_violate_stepien(db: Session, team: str, traded_year: int,
+                           exclude_pick_ids: set[int]) -> bool:
     """Stepien rule: after this trade, the team must own a first-round pick
     (own OR acquired from another team) in each of the next two consecutive
     future drafts. They can't be without a first-rounder in back-to-back years.
+
+    `exclude_pick_ids` is the set of ALL picks being shipped out in this trade
+    proposal for this team — passing the entire set (not just one id) means
+    a single deal that includes two consecutive 1sts is correctly caught.
 
     Implementation notes:
       - Counts ANY first-round pick the team currently owns, not just their
         own — the real Stepien rule cares about *having a 1st*, not about
         owning your own.
-      - Only checks within the 4-year window we actually have data for, so
-        a team trading their 2026 pick doesn't get false-flagged because we
-        don't track 2033+ picks.
+      - Only checks within the window we actually have data for, so a team
+        trading their 2026 pick doesn't get false-flagged because we don't
+        track 2033+ picks.
     """
-    # All first-round picks the team currently owns (excluding the one being
-    # traded). Include both originals and any picks acquired in past trades.
     picks = (
         db.query(DraftPick)
         .filter(
             DraftPick.owner_tricode == team,
             DraftPick.round == 1,
-            DraftPick.id != exclude_pick_id,
+            ~DraftPick.id.in_(exclude_pick_ids) if exclude_pick_ids else True,
         )
         .all()
     )
