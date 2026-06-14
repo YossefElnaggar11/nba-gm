@@ -1,7 +1,7 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { api, type Team } from "@/lib/api";
 import { BackButton } from "@/app/back-button";
 
@@ -10,7 +10,17 @@ const MODE_LABEL: Record<string, { name: string; color: string }> = {
   career: { name: "Full GM Mode", color: "orange" },
 };
 
+// Wrap the actual page in Suspense — Next.js requires useSearchParams to be
+// inside a Suspense boundary so prerender can bail out gracefully.
 export default function TeamSetupPage() {
+  return (
+    <Suspense fallback={<div className="max-w-7xl mx-auto px-6 py-8 text-zinc-500">Loading…</div>}>
+      <TeamSetupInner />
+    </Suspense>
+  );
+}
+
+function TeamSetupInner() {
   const router = useRouter();
   const sp = useSearchParams();
   const mode = (sp.get("mode") || "offseason") as "career" | "offseason";
