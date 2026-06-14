@@ -2,11 +2,26 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 export default async function DraftPage({ params }: { params: Promise<{ year: string }> }) {
   const { year } = await params;
   const yearNum = parseInt(year, 10);
-  const picks = await api.draftOrder(yearNum);
+  let picks: Awaited<ReturnType<typeof api.draftOrder>>;
+  try {
+    picks = await api.draftOrder(yearNum);
+  } catch {
+    return (
+      <div className="max-w-2xl mx-auto px-6 py-16 text-center">
+        <h1 className="text-2xl font-bold mb-3">Waking up the backend…</h1>
+        <p className="text-zinc-400">
+          The free-tier server takes ~30 seconds to spin up after inactivity.
+          Refresh the page in a moment.
+        </p>
+      </div>
+    );
+  }
   const r1 = picks.filter((p) => p.round === 1);
   const r2 = picks.filter((p) => p.round === 2);
 

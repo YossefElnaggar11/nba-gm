@@ -12,18 +12,39 @@ import { ReleaseButton } from "./release-button";
 import { BackButton } from "@/app/back-button";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 export default async function TeamPage({ params }: { params: Promise<{ tricode: string }> }) {
   const { tricode } = await params;
   const code = tricode.toUpperCase();
-  const state = await api.state();
+
+  // If the backend is unreachable (e.g. during Vercel's build-time page-data
+  // collection, or a cold Render free-tier instance), render a lightweight
+  // loading shell instead of failing the deploy. Real requests at runtime
+  // re-execute this server component with the backend up.
+  let state, team, roster, cap, arsenal;
+  try {
+    state = await api.state();
+    [team, roster, cap, arsenal] = await Promise.all([
+      api.team(code),
+      api.roster(code),
+      api.capSheet(code, state.current_season),
+      api.teamArsenal(code),
+    ]);
+  } catch {
+    return (
+      <div className="max-w-2xl mx-auto px-6 py-16 text-center">
+        <h1 className="text-2xl font-bold mb-3">Waking up the backend…</h1>
+        <p className="text-zinc-400">
+          The free-tier server takes ~30 seconds to spin up after inactivity.
+          Refresh the page in a moment.
+        </p>
+      </div>
+    );
+  }
+
   const currentSeason = state.current_season;
-  const [team, roster, cap, arsenal] = await Promise.all([
-    api.team(code),
-    api.roster(code),
-    api.capSheet(code, currentSeason),
-    api.teamArsenal(code),
-  ]);
 
   const apronStatus = cap.over_second_apron
     ? { tier: "SECOND APRON", text: "Hard-capped at 2nd apron · No aggregation · No taxpayer MLE · No BAE · Pick 7 yrs out frozen", color: "red", border: "border-red-500", bg: "bg-red-900/20" }
