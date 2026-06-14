@@ -121,8 +121,18 @@ def enter_mode(req: EnterModeIn):
                 seed_main(engine=engine)
                 msg_parts.append(f"career restore failed, started fresh: {e}")
         else:
-            seed_main(engine=engine)
-            msg_parts.append("career state initialised fresh")
+            # No backup file. Only reseed if the DB is actually empty — otherwise
+            # leave the existing populated state alone. (Without this, every
+            # visit to /setup/team?mode=career would re-run the ~8s seed.)
+            from app.db.schema import Team
+            from sqlalchemy.orm import Session as _S
+            with _S(engine) as db:
+                has_data = db.query(Team).first() is not None
+            if has_data:
+                msg_parts.append("career mode active (no save yet, current state preserved)")
+            else:
+                seed_main(engine=engine)
+                msg_parts.append("career state initialised fresh")
 
     _active_mode = target
     return {"ok": True, "mode": target, "message": "; ".join(msg_parts) or "no change"}
