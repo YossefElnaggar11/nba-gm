@@ -338,23 +338,44 @@ def validate_trade(db: Session, proposal: TradeProposal) -> list[Violation]:
 
 
 def _would_violate_stepien(db: Session, team: str, traded_year: int, exclude_pick_id: int) -> bool:
-    """After hypothetically removing the given pick, does the team have a 1st in each
-    of the next 7 years, or violate the consecutive-year rule?"""
+    """Stepien rule: after this trade, the team must own a first-round pick
+    (own OR acquired from another team) in each of the next two consecutive
+    future drafts. They can't be without a first-rounder in back-to-back years.
+
+    Implementation notes:
+      - Counts ANY first-round pick the team currently owns, not just their
+        own — the real Stepien rule cares about *having a 1st*, not about
+        owning your own.
+      - Only checks within the 4-year window we actually have data for, so
+        a team trading their 2026 pick doesn't get false-flagged because we
+        don't track 2033+ picks.
+    """
+    # All first-round picks the team currently owns (excluding the one being
+    # traded). Include both originals and any picks acquired in past trades.
     picks = (
         db.query(DraftPick)
         .filter(
-            DraftPick.original_team_tricode == team,  # only own picks count
+            DraftPick.owner_tricode == team,
             DraftPick.round == 1,
-            DraftPick.owner_tricode == team,  # they still control it
             DraftPick.id != exclude_pick_id,
-            DraftPick.season_year >= traded_year - 1,
-            DraftPick.season_year <= traded_year + 7,
         )
         .all()
     )
     held_years = {p.season_year for p in picks}
-    # Stepien: must have own 1st in either year N or year N+1 for any N.
-    for year in range(traded_year, traded_year + 7):
+
+    # Determine the window we actually have data for. Don't false-flag picks
+    # for years where we have no data at all.
+    all_known_years = {
+        y for (y,) in db.query(DraftPick.season_year).distinct().all()
+    }
+    if not all_known_years:
+        return False
+    max_year = max(all_known_years)
+
+    # Walk forward from the traded year, but stop two years before the data
+    # ends (otherwise the rightmost check necessarily fails because year+1 is
+    # outside our pick universe).
+    for year in range(traded_year, max_year):
         if year not in held_years and (year + 1) not in held_years:
             return True
     return False
