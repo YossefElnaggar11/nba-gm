@@ -1,7 +1,126 @@
 {
-  "_doc": "Real-world 2026 NBA offseason events. When this file has data, the seed uses it instead of the mock auto-draft. Submit updates via POST /api/admin/import-events — that endpoint persists to this file and re-applies to the live DB.",
+  "_doc": "Real 2026 NBA offseason events. Source: Wikipedia 2026 NBA Draft + ESPN trade tracker. Updated 2026-06-28. Free-agent signings still TBD (Spotrac/RealGM blocked the scrape).",
   "draft_year": 2026,
-  "draft": [],
-  "trades": [],
+  "draft": [
+    {"pick": 1,  "team": "WAS", "player": "AJ Dybantsa",         "college": "BYU",                                "position": "SF"},
+    {"pick": 2,  "team": "UTA", "player": "Darryn Peterson",     "college": "Kansas",                             "position": "PG"},
+    {"pick": 3,  "team": "MEM", "player": "Cameron Boozer",      "college": "Duke",                               "position": "PF"},
+    {"pick": 4,  "team": "CHI", "player": "Caleb Wilson",        "college": "North Carolina",                     "position": "PF"},
+    {"pick": 5,  "team": "LAC", "player": "Keaton Wagler",       "college": "Illinois",                           "position": "PG"},
+    {"pick": 6,  "team": "BKN", "player": "Mikel Brown Jr.",     "college": "Louisville",                         "position": "PG"},
+    {"pick": 7,  "team": "SAC", "player": "Darius Acuff Jr.",    "college": "Arkansas",                           "position": "PG"},
+    {"pick": 8,  "team": "ATL", "player": "Kingston Flemings",   "college": "Houston",                            "position": "PG"},
+    {"pick": 9,  "team": "DAL", "player": "Morez Johnson Jr.",   "college": "Michigan",                           "position": "PF", "overall": 70, "potential": 84},
+    {"pick": 10, "team": "MIL", "player": "Brayden Burries",     "college": "Arizona",                            "position": "SG"},
+    {"pick": 11, "team": "GSW", "player": "Yaxel Lendeborg",     "college": "Michigan",                           "position": "PF"},
+    {"pick": 12, "team": "OKC", "player": "Aday Mara",           "college": "Michigan",                           "position": "C"},
+    {"pick": 13, "team": "MIL", "player": "Nate Ament",          "college": "Tennessee",                          "position": "SF"},
+    {"pick": 14, "team": "CHA", "player": "Hannes Steinbach",    "college": "Washington",                         "position": "PF", "overall": 68, "potential": 82},
+    {"pick": 15, "team": "CHI", "player": "Dailyn Swain",        "college": "Texas",                              "position": "SF", "overall": 68, "potential": 82},
+    {"pick": 16, "team": "OKC", "player": "Bennett Stirtz",      "college": "Iowa",                               "position": "PG", "overall": 67, "potential": 81},
+    {"pick": 17, "team": "DET", "player": "Ebuka Okorie",        "college": "Stanford",                           "position": "SG", "overall": 67, "potential": 81},
+    {"pick": 18, "team": "CHA", "player": "Christian Anderson Jr.", "college": "Texas Tech",                      "position": "PG", "overall": 67, "potential": 80},
+    {"pick": 19, "team": "TOR", "player": "Allen Graves",        "college": "Santa Clara",                        "position": "SG", "overall": 66, "potential": 80},
+    {"pick": 20, "team": "SAS", "player": "Jayden Quaintance",   "college": "Kentucky",                           "position": "C"},
+    {"pick": 21, "team": "MEM", "player": "Karim López",         "college": "NZ Breakers",                        "position": "SF"},
+    {"pick": 22, "team": "PHI", "player": "Labaron Philon Jr.",  "college": "Alabama",                            "position": "PG"},
+    {"pick": 23, "team": "ATL", "player": "Zuby Ejiofor",        "college": "St. John's",                         "position": "PF", "overall": 65, "potential": 78},
+    {"pick": 24, "team": "LAL", "player": "Cameron Carr",        "college": "Baylor",                             "position": "SG", "overall": 65, "potential": 78},
+    {"pick": 25, "team": "DAL", "player": "Sergio de Larrea",    "college": "Valencia (Spain)",                   "position": "PG", "overall": 65, "potential": 78},
+    {"pick": 26, "team": "SAS", "player": "Tarris Reed Jr.",     "college": "UConn",                              "position": "C",  "overall": 65, "potential": 77},
+    {"pick": 27, "team": "BOS", "player": "Chris Cenac Jr.",     "college": "Houston",                            "position": "C",  "overall": 64, "potential": 78},
+    {"pick": 28, "team": "BKN", "player": "Joshua Jefferson",    "college": "Iowa State",                         "position": "SF", "overall": 64, "potential": 76},
+    {"pick": 29, "team": "SAC", "player": "Alex Karaban",        "college": "UConn",                              "position": "PF", "overall": 64, "potential": 76},
+    {"pick": 30, "team": "PHX", "player": "Koa Peat",            "college": "Arizona",                            "position": "PF", "overall": 64, "potential": 77},
+
+    {"pick": 31, "team": "HOU", "player": "Bruce Thornton",      "college": "Ohio State",                         "position": "PG", "overall": 63, "potential": 73},
+    {"pick": 32, "team": "MEM", "player": "Richie Saunders",     "college": "BYU",                                "position": "SG", "overall": 62, "potential": 72},
+    {"pick": 33, "team": "MIN", "player": "Isaiah Evans",        "college": "Duke",                               "position": "SG", "overall": 62, "potential": 73},
+    {"pick": 34, "team": "CLE", "player": "Meleek Thomas",       "college": "Arkansas",                           "position": "SG", "overall": 62, "potential": 73},
+    {"pick": 35, "team": "DEN", "player": "Trevon Brazile",      "college": "Arkansas",                           "position": "PF", "overall": 62, "potential": 72},
+    {"pick": 36, "team": "LAC", "player": "Baba Miller",         "college": "Cincinnati",                         "position": "PF", "overall": 62, "potential": 72},
+    {"pick": 37, "team": "MIA", "player": "Ryan Conwell",        "college": "Louisville",                         "position": "SG", "overall": 61, "potential": 71},
+    {"pick": 38, "team": "IND", "player": "Braden Smith",        "college": "Purdue",                             "position": "PG", "overall": 61, "potential": 71},
+    {"pick": 39, "team": "NYK", "player": "Jack Kayil",          "college": "Alba Berlin (Germany)",              "position": "PG", "overall": 61, "potential": 71},
+    {"pick": 40, "team": "BOS", "player": "Dillon Mitchell",     "college": "St. John's",                         "position": "SF", "overall": 61, "potential": 71},
+    {"pick": 41, "team": "OKC", "player": "Otega Oweh",          "college": "Kentucky",                           "position": "SG", "overall": 61, "potential": 71},
+    {"pick": 42, "team": "SAS", "player": "Ja'Kobi Gillespie",   "college": "Tennessee",                          "position": "PG", "overall": 60, "potential": 70},
+    {"pick": 43, "team": "BKN", "player": "Tyler Bilodeau",      "college": "UCLA",                               "position": "PF", "overall": 60, "potential": 70},
+    {"pick": 44, "team": "SAS", "player": "Maliq Brown",         "college": "Duke",                               "position": "PF", "overall": 60, "potential": 70},
+    {"pick": 45, "team": "SAC", "player": "Emanuel Sharp",       "college": "Houston",                            "position": "SG", "overall": 60, "potential": 70},
+    {"pick": 46, "team": "WAS", "player": "Felix Okpara",        "college": "Tennessee",                          "position": "C",  "overall": 60, "potential": 70},
+    {"pick": 47, "team": "NYK", "player": "Tyler Nickel",        "college": "Vanderbilt",                         "position": "SF", "overall": 60, "potential": 70},
+    {"pick": 48, "team": "DAL", "player": "Tobi Lawal",          "college": "Virginia Tech",                      "position": "PF", "overall": 60, "potential": 70},
+    {"pick": 49, "team": "DEN", "player": "Bryce Hopkins",       "college": "St. John's",                         "position": "PF", "overall": 60, "potential": 70},
+    {"pick": 50, "team": "TOR", "player": "Jaden Bradley",       "college": "Arizona",                            "position": "PG", "overall": 60, "potential": 70},
+    {"pick": 51, "team": "ORL", "player": "Izaiyah Nelson",      "college": "South Florida",                      "position": "PF", "overall": 59, "potential": 69},
+    {"pick": 52, "team": "ATL", "player": "Henri Veesaar",       "college": "North Carolina",                     "position": "C",  "overall": 59, "potential": 69},
+    {"pick": 53, "team": "DET", "player": "Ugonna Onyenso",      "college": "Virginia",                           "position": "C",  "overall": 59, "potential": 69},
+    {"pick": 54, "team": "GSW", "player": "Lajae Jones",         "college": "Florida State",                      "position": "SG", "overall": 59, "potential": 69},
+    {"pick": 55, "team": "LAC", "player": "Nick Martinelli",     "college": "Northwestern",                       "position": "SF", "overall": 59, "potential": 69},
+    {"pick": 56, "team": "DAL", "player": "Vsevolod Ishchenko",  "college": "PBC Lokomotiv Kuban (Russia)",       "position": "C",  "overall": 59, "potential": 69},
+    {"pick": 57, "team": "LAC", "player": "Narcisse Ngoy",       "college": "Poitiers Basket 86 (France)",        "position": "PF", "overall": 58, "potential": 68},
+    {"pick": 58, "team": "NOP", "player": "Jaron Pierre Jr.",    "college": "SMU",                                "position": "SG", "overall": 58, "potential": 68},
+    {"pick": 59, "team": "MIN", "player": "Trey Kaufman-Renn",   "college": "Purdue",                             "position": "PF", "overall": 58, "potential": 68},
+    {"pick": 60, "team": "MIL", "player": "Malique Lewis",       "college": "South East Melbourne Phoenix (Australia)", "position": "SF", "overall": 58, "potential": 68}
+  ],
+  "trades": [
+    {
+      "description": "Aaron Wiggins → ATL for picks (2026-06-21)",
+      "legs": [
+        {"team": "OKC", "out_players": ["Aaron Wiggins"]},
+        {"team": "ATL", "out_players": []}
+      ]
+    },
+    {
+      "description": "Giannis + Portis → MIA, Herro/Ware/Jaquez/Jakucionis → MIL (2026-06-22)",
+      "legs": [
+        {"team": "MIL", "out_players": ["Giannis Antetokounmpo", "Bobby Portis"]},
+        {"team": "MIA", "out_players": ["Tyler Herro", "Kel'el Ware", "Jaime Jaquez Jr.", "Kasparas Jakucionis"]}
+      ]
+    },
+    {
+      "description": "Randle → BKN for nothing (part of 3-team Randle/Claxton/Gueye)",
+      "legs": [
+        {"team": "MIN", "out_players": ["Julius Randle"]},
+        {"team": "BKN", "out_players": []}
+      ]
+    },
+    {
+      "description": "Claxton → CHI for nothing (part of 3-team Randle/Claxton/Gueye)",
+      "legs": [
+        {"team": "BKN", "out_players": ["Nic Claxton"]},
+        {"team": "CHI", "out_players": []}
+      ]
+    },
+    {
+      "description": "Mouhamed Gueye → MIN (part of 3-team Randle/Claxton/Gueye)",
+      "legs": [
+        {"team": "ATL", "out_players": ["Mouhamed Gueye"]},
+        {"team": "MIN", "out_players": []}
+      ]
+    },
+    {
+      "description": "Isaiah Stewart → MEM for picks (2026-06-23)",
+      "legs": [
+        {"team": "DET", "out_players": ["Isaiah Stewart"]},
+        {"team": "MEM", "out_players": []}
+      ]
+    },
+    {
+      "description": "LaMelo Ball + Josh Green → MIN, Naz Reid → CHA (2026-06-25)",
+      "legs": [
+        {"team": "CHA", "out_players": ["LaMelo Ball", "Josh Green"]},
+        {"team": "MIN", "out_players": ["Naz Reid"]}
+      ]
+    },
+    {
+      "description": "Isaiah Joe → DET for picks (2026-06-26)",
+      "legs": [
+        {"team": "OKC", "out_players": ["Isaiah Joe"]},
+        {"team": "DET", "out_players": []}
+      ]
+    }
+  ],
   "signings": []
 }

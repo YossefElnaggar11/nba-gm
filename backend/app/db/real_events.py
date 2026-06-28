@@ -21,7 +21,7 @@ from app.db.schema import (
 )
 
 
-EVENTS_PATH = Path(__file__).resolve().parents[1] / "data" / "raw" / "real_2026_events.json"
+EVENTS_PATH = Path(__file__).resolve().parents[2] / "data" / "raw" / "real_2026_events.json"
 
 
 # ---------------------------------------------------------------------------
