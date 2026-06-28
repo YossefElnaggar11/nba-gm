@@ -732,6 +732,22 @@
       "years": 3,
       "raise_pct": 0,
       "using": "BIRD"
+    },
+    {
+      "player": "Jamal Shead",
+      "team": "TOR",
+      "salary_year1": 2300000,
+      "years": 1,
+      "raise_pct": 0,
+      "using": "TEAM_OPTION"
+    },
+    {
+      "player": "Karlo Matkovi\u0107",
+      "team": "NOP",
+      "salary_year1": 2300000,
+      "years": 1,
+      "raise_pct": 0,
+      "using": "TEAM_OPTION"
     }
   ]
 }
