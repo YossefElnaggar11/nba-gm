@@ -294,6 +294,44 @@ def seed_prospects(db: Session) -> None:
     print(f"  -> {total} prospects across 2026 + 2027 + 2028")
 
 
+def seed_2026_draft_results(db: Session) -> None:
+    """The real-world 2026 NBA draft happened on June 25-26, 2026. By the time
+    the user opens this game the 2026 draft is over — so auto-assign every
+    pick in our DB to the corresponding-ranked prospect, create their rookie
+    contract, and mark the pick CONVEYED. The user starts after the draft
+    instead of being forced to run it themselves."""
+    from app.api.draft_picks import _create_rookie_contract
+    print("Auto-applying 2026 draft results...")
+
+    picks = (
+        db.query(DraftPick)
+        .filter(
+            DraftPick.season_year == 2026,
+            DraftPick.status == PickStatus.OWNED,
+            DraftPick.pick_number.isnot(None),
+            DraftPick.is_swap == False,
+        )
+        .order_by(DraftPick.round, DraftPick.pick_number)
+        .all()
+    )
+    prospects = (
+        db.query(Prospect)
+        .filter(Prospect.draft_year == 2026, Prospect.drafted_to_team.is_(None))
+        .order_by(Prospect.rank)
+        .all()
+    )
+    matched = 0
+    for pick, prospect in zip(picks, prospects):
+        prospect.drafted_to_team = pick.owner_tricode
+        prospect.drafted_at_pick = pick.pick_number
+        player = _create_rookie_contract(db, prospect, pick.owner_tricode, pick.pick_number or 60)
+        prospect.created_player_id = player.id
+        pick.status = PickStatus.CONVEYED
+        matched += 1
+    db.commit()
+    print(f"  -> {matched} 2026 picks auto-conveyed to their teams")
+
+
 def _salary_implied_ovr_floor(salary_y1: int) -> int:
     """Stars who didn't play much last year still deserve a high baseline OVR
     based on their max-contract status. Prevents Bradley-Beal-style underrating
@@ -521,6 +559,9 @@ def main(wipe_only: bool = False, engine=None):
         seed_draft_picks(db)
         seed_prospects(db)
         seed_player_ratings(db)
+        # The real 2026 draft is in the past — auto-apply its results so the
+        # user doesn't have to run a draft they've already seen happen.
+        seed_2026_draft_results(db)
     print(f"\nSeed complete -> {DB_PATH}")
 
 

@@ -104,19 +104,23 @@ export function NextStepBanner({ tricode }: { tricode: string }) {
     );
   }
 
-  // Build the canonical sequence
-  const steps: Step[] = [
-    {
+  // Build the canonical sequence. The Draft step is only shown when there's
+  // actual work to do — once all picks are conveyed (or the draft was already
+  // pre-applied), the step is omitted entirely instead of sitting there as a
+  // green ✓ taking up space.
+  const steps: Step[] = [];
+  if (data.draftPicksLeft > 0) {
+    steps.push({
       id: "draft",
       label: "Draft",
       fullLabel: `${data.draftYear} NBA Draft`,
       href: `/draft/${data.draftYear}/live`,
-      status: data.draftPicksLeft > 0 ? "current" : "done",
-      detail: data.draftPicksLeft > 0
-        ? `${data.draftPicksLeftForUser} of your picks unmade · ${data.draftPicksLeft} left in the league`
-        : "Complete",
+      status: "current",
+      detail: `${data.draftPicksLeftForUser} of your picks unmade · ${data.draftPicksLeft} left in the league`,
       countBadge: data.draftPicksLeftForUser || undefined,
-    },
+    });
+  }
+  steps.push(
     {
       id: "options",
       label: "Options",
@@ -147,7 +151,7 @@ export function NextStepBanner({ tricode }: { tricode: string }) {
       status: "current",
       detail: "Browse the market and work the phones — optional but recommended",
     },
-  ];
+  );
   const rosterOverflow = data.standardCount > 15;
   if (rosterOverflow) {
     // Insert a roster-trim step right before sim
