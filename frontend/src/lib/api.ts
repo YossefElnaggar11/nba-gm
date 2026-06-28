@@ -418,6 +418,11 @@ export const api = {
     postJSON<{ ok: boolean; mode: string; message: string }>("/api/admin/enter-mode", { mode }),
   getMode: () => getJSON<{ mode: string }>("/api/admin/mode"),
   saveCareer: () => postJSON<{ ok: boolean; message: string }>("/api/admin/save-career", {}),
+  getEvents: () => getJSON<{ draft_year: number; draft: unknown[]; trades: unknown[]; signings: unknown[] }>("/api/admin/events"),
+  importEvents: (payload: unknown) =>
+    postJSON<{ ok: boolean; saved_to: string; picks_applied: number; trades_applied: number; signings_applied: number; summary: unknown }>(
+      "/api/admin/import-events", payload,
+    ),
   releasePlayer: (player_id: number) =>
     postJSON<{ ok: boolean; player: string; released_from: string }>("/api/admin/release-player", { player_id }),
   renounceHold: (hold_id: number) =>

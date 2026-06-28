@@ -1,0 +1,7 @@
+{
+  "_doc": "Real-world 2026 NBA offseason events. When this file has data, the seed uses it instead of the mock auto-draft. Submit updates via POST /api/admin/import-events — that endpoint persists to this file and re-applies to the live DB.",
+  "draft_year": 2026,
+  "draft": [],
+  "trades": [],
+  "signings": []
+}

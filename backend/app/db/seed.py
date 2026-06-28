@@ -559,9 +559,20 @@ def main(wipe_only: bool = False, engine=None):
         seed_draft_picks(db)
         seed_prospects(db)
         seed_player_ratings(db)
-        # The real 2026 draft is in the past — auto-apply its results so the
-        # user doesn't have to run a draft they've already seen happen.
-        seed_2026_draft_results(db)
+        # Real-world 2026 events (draft + trades + signings) come from a JSON
+        # file the admin endpoint writes. If that file has any real data, use
+        # it; otherwise fall back to the rank-ordered mock auto-draft so a
+        # fresh dev box still has rookies on rosters.
+        from app.db.real_events import load_events, apply_all_events
+        events = load_events()
+        if events.get("draft") or events.get("trades") or events.get("signings"):
+            print("Applying real 2026 offseason events from real_2026_events.json...")
+            summary = apply_all_events(db, events)
+            picks_done = len(summary["draft"]["applied"]) if summary["draft"] else 0
+            print(f"  -> {picks_done} draft picks, {len(summary['trades'])} trades, "
+                  f"{len(summary['signings'])} signings")
+        else:
+            seed_2026_draft_results(db)
     print(f"\nSeed complete -> {DB_PATH}")
 
 

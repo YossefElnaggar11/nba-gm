@@ -156,6 +156,67 @@ def save_career():
         return {"ok": False, "message": str(e)}
 
 
+class ImportEventsIn(BaseModel):
+    """Real-world 2026 offseason events the user wants applied to the DB.
+    Any of the three lists can be omitted/empty. See docs/sample_real_events.json
+    for the full schema."""
+    draft: list[dict] | None = None
+    trades: list[dict] | None = None
+    signings: list[dict] | None = None
+    merge: bool = True   # if True, append to existing events; if False, replace
+
+
+@router.post("/import-events")
+def import_events(req: ImportEventsIn):
+    """Accept a JSON payload of real-world events, persist it to
+    real_2026_events.json, and re-apply (revert+reapply) to the live DB.
+
+    Whatever's in the file becomes the source of truth on the next reset/seed,
+    so updates survive Render redeploys too.
+    """
+    from app.db.real_events import load_events, save_events, apply_all_events, revert_2026_draft
+    from app.main import SessionLocal
+
+    existing = load_events()
+    new_draft = req.draft if req.draft is not None else (existing["draft"] if req.merge else [])
+    new_trades = (existing["trades"] if req.merge else []) + (req.trades or [])
+    new_signings = (existing["signings"] if req.merge else []) + (req.signings or [])
+
+    events = {
+        "draft_year": 2026,
+        "draft": new_draft,
+        "trades": new_trades,
+        "signings": new_signings,
+    }
+    save_events(events)
+
+    # Apply to the live DB. Note: we don't fully re-seed; we only revert the
+    # 2026 draft (so we can re-apply with new picks) and then layer trades /
+    # signings on top of current state.
+    db = SessionLocal()
+    try:
+        if events["draft"]:
+            revert_2026_draft(db)
+        summary = apply_all_events(db, events)
+        return {
+            "ok": True,
+            "saved_to": "data/raw/real_2026_events.json",
+            "picks_applied": len(summary["draft"]["applied"]) if summary["draft"] else 0,
+            "trades_applied": sum(1 for t in summary["trades"] if t.get("ok")),
+            "signings_applied": sum(1 for s in summary["signings"] if s.get("ok")),
+            "summary": summary,
+        }
+    finally:
+        db.close()
+
+
+@router.get("/events")
+def get_events():
+    """Return the current real_2026_events.json contents (for the admin UI)."""
+    from app.db.real_events import load_events
+    return load_events()
+
+
 class ReleaseIn(BaseModel):
     player_id: int
 
